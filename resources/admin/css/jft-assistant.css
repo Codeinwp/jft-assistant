@@ -1,0 +1,21 @@
+.jft-spinner {
+	background: url('/wp-admin/images/wpspin_light.gif') no-repeat;
+	background-size: 16px 16px;
+	display: none;
+	margin: auto;
+	opacity: .7;
+	filter: alpha(opacity=70);
+	width: 16px;
+	height: 16px;
+}
+
+.jft-theme {
+	float: left;
+	margin: 1%;
+	width: 30%;
+	cursor: pointer;
+}
+
+.jft-theme img {
+	max-width: 100%;
+}

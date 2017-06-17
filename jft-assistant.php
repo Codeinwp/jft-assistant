@@ -1,0 +1,87 @@
+<?php
+/**
+* Plugin Name: JFT Assistant
+* Contributors: rozroz
+* Plugin URI: http://www.something.com
+* Description: Blah Blah
+* Version: 1.0
+* Author: Someone
+* Author URI: http://www.something.com
+* License: GPL2
+* Text-Domain: __jft_assistant_
+* Domain Path: /languages
+*/
+/*
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License, version 2, as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+*/
+
+define( 'JFT_ASSISTANT_NAME__', 'JFT Assistant' );
+define( 'JFT_ASSISTANT_SLUG__', '__jft_assistant_' );
+define( 'JFT_ASSISTANT_VERSION__', 1.0 );
+define( 'JFT_ASSISTANT_DIR__', trailingslashit( plugin_dir_path( __FILE__ ) ) );
+define( 'JFT_ASSISTANT_URL__', plugin_dir_url( __FILE__ ) );
+define( 'JFT_ASSISTANT_ROOT__', trailingslashit( plugins_url( '', __FILE__ ) ) );
+define( 'JFT_ASSISTANT_RESOURCES__', JFT_ASSISTANT_ROOT__ . 'resources/' );
+define( 'JFT_ASSISTANT_IMAGES__', JFT_ASSISTANT_RESOURCES__ . 'images/' );
+define( 'JFT_ASSISTANT_AJAX__', admin_url( 'admin-ajax.php?action=' . JFT_ASSISTANT_SLUG__ ) );
+define( 'JFT_ASSISTANT_DEBUG__', false );
+// the API URL
+define( 'JFT_ASSISTANT_THEO_API_URL', 'http://localhost:81/wp-json/theo/v1/search/#name/#page/' );
+// the URL where the PNG (theme image) and ZIP (theme archive) will be found
+define( 'JFT_ASSISTANT_THEO_BASE_URL', 'http://localhost/wp-content/uploads/' );
+
+if ( JFT_ASSISTANT_DEBUG__ ) {
+    @error_reporting( E_ALL );
+    @ini_set( 'display_errors', '1' );
+}
+
+/**
+ * Abort loading if WordPress is upgrading
+ */
+if ( defined( 'WP_INSTALLING' ) && WP_INSTALLING ) {
+    return;
+}
+
+/**
+ * The entry point of the plugin
+ */
+function jft_assistant_init() {
+	require_once JFT_ASSISTANT_DIR__ . '/classes/JftAssistant/Autoloader.php';
+	JftAssistant_Autoloader::register();
+	JftAssistant_Plugin::get_instance()->load();
+}
+
+// hook to load plugin
+add_action( 'plugins_loaded', 'jft_assistant_init', 0 );
+
+register_activation_hook( __FILE__ , 'jft_assistant_activate' );
+register_deactivation_hook( __FILE__ , 'jft_assistant_deactivate' );
+
+/**
+ * Called when plugin is activated
+ */
+function jft_assistant_activate() {
+	require_once JFT_ASSISTANT_DIR__ . '/classes/JftAssistant/Autoloader.php';
+	JftAssistant_Autoloader::register();
+	JftAssistant_Plugin::get_instance()->activate();
+}
+
+/**
+ * Called when plugin is activated
+ */
+function jft_assistant_deactivate() {
+	require_once JFT_ASSISTANT_DIR__ . '/classes/JftAssistant/Autoloader.php';
+	JftAssistant_Autoloader::register();
+	JftAssistant_Plugin::get_instance()->deactivate();
+}
