@@ -29,6 +29,10 @@
                 }
             });
         });
+
+        if(jft.screen === 'theme-install'){
+            $('ul.filter-links').append('<li><a href="#" data-sort="jft">' + jft.theme_tab + '</a></li>');
+        }
     }
 
     function download(element, id) {
