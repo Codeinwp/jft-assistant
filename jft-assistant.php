@@ -34,12 +34,8 @@ define( 'JFT_ASSISTANT_URL__', plugin_dir_url( __FILE__ ) );
 define( 'JFT_ASSISTANT_ROOT__', trailingslashit( plugins_url( '', __FILE__ ) ) );
 define( 'JFT_ASSISTANT_RESOURCES__', JFT_ASSISTANT_ROOT__ . 'resources/' );
 define( 'JFT_ASSISTANT_IMAGES__', JFT_ASSISTANT_RESOURCES__ . 'images/' );
-define( 'JFT_ASSISTANT_AJAX__', admin_url( 'admin-ajax.php?action=' . JFT_ASSISTANT_SLUG__ ) );
 define( 'JFT_ASSISTANT_DEBUG__', false );
-// the API URL
-define( 'JFT_ASSISTANT_THEO_API_URL', 'http://localhost:81/wp-json/theo/v1/search/#name/#page/' );
-// the URL where the PNG (theme image) and ZIP (theme archive) will be found
-define( 'JFT_ASSISTANT_THEO_BASE_URL', 'http://localhost/wp-content/uploads/' );
+define( 'JFT_ASSISTANT_ENDPOINT__', 'http://s24607.p182.sites.pressdns.com/wp-json/wp/v2/posts?per_page=100&orderby=score&order=desc&page=#' );
 
 if ( JFT_ASSISTANT_DEBUG__ ) {
     @error_reporting( E_ALL );
