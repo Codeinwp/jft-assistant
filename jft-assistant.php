@@ -35,7 +35,10 @@ define( 'JFT_ASSISTANT_ROOT__', trailingslashit( plugins_url( '', __FILE__ ) ) )
 define( 'JFT_ASSISTANT_RESOURCES__', JFT_ASSISTANT_ROOT__ . 'resources/' );
 define( 'JFT_ASSISTANT_IMAGES__', JFT_ASSISTANT_RESOURCES__ . 'images/' );
 define( 'JFT_ASSISTANT_DEBUG__', false );
-define( 'JFT_ASSISTANT_ENDPOINT__', 'http://s24607.p182.sites.pressdns.com/wp-json/wp/v2/posts?per_page=100&orderby=score&order=desc&page=#' );
+define( 'JFT_ASSISTANT_THEMES_PERPAGE__', 5 );
+define( 'JFT_ASSISTANT_THEMES_ENDPOINT__', 'http://1224da88.ngrok.io/wp-json/wp/v2/posts?context=jft-assistant&per_page=' . JFT_ASSISTANT_THEMES_PERPAGE__ . '&orderby=score&order=desc&page=#' );
+define( 'JFT_ASSISTANT_THEMES_CACHE_DAYS__', 1 );
+define( 'JFT_ASSISTANT_THEMES_DISABLE_CACHE__', false );
 
 if ( JFT_ASSISTANT_DEBUG__ ) {
     @error_reporting( E_ALL );

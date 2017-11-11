@@ -92,23 +92,36 @@ class JftAssistant_Admin {
 	 * @param object             $args     Arguments used to query for installer pages from the Themes API.
 	 */
 	function get_themes( $args ) {
-		$response	= wp_remote_get( 
-			 str_replace( '#', isset( $args->page ) ? $args->page : 1, JFT_ASSISTANT_ENDPOINT__ ),
-			 array(
-				 'headers'	=> array(
-					'X-JFT-Source'		=> 'JFT Assistant v' . JFT_ASSISTANT_VERSION__,
-				 )
-			) 
-		);
+		$page		= isset( $args->page ) ? $args->page : 1;
+		$key		= sprintf( '%s_response_%d_%d', JFT_ASSISTANT_SLUG__, $page, JFT_ASSISTANT_THEMES_PERPAGE__ );
+		$response	= get_transient( $key );
 
-		$headers	= wp_remote_retrieve_headers( $response );
+		if ( false === $response ) {
+			$response	= wp_remote_get( 
+				 str_replace( '#', $page, JFT_ASSISTANT_THEMES_ENDPOINT__ ),
+				 array(
+					'headers'	=> array(
+						'X-JFT-Source'		=> 'JFT Assistant v' . JFT_ASSISTANT_VERSION__,
+					 ),
+					'timeout' => 120,
+				) 
+			);
+
+			if ( is_wp_error( $response ) ) {
+				return;
+			}
+			if ( ! JFT_ASSISTANT_THEMES_DISABLE_CACHE__ ) {
+				set_transient( $key, $response, JFT_ASSISTANT_THEMES_CACHE_DAYS__ * DAY_IN_SECONDS );
+			}
+		}
+
 		$json		= json_decode( wp_remote_retrieve_body( $response ), true );
-
-		$themes	= array();
+		$res		= array();
 		if ( $json ) {
+			$themes		= array();
 			foreach ( $json as $theme ) {
 				$date	= DateTime::createFromFormat( 'Y-m-d\TH:i:s', $theme['modified_gmt'] );
-				self::$jft_themes[ $theme['slug'] ] = 'http://www.google.com'; // need download url;
+				self::$jft_themes[ $theme['slug'] ] = $theme['download_url'];
 				$themes[]	= (object) array(
 					'slug'				=> $theme['slug'],
 					'name'				=> $theme['title_attribute'],
@@ -117,22 +130,25 @@ class JftAssistant_Admin {
 					'num_ratings'		=> $theme['downloads'],
 					'author'			=> $theme['author_name'],
 					'preview_url'		=> $theme['demo_url'],
-					'screenshot_url'	=> $theme['listing_image'][0],
+					'screenshot_url'	=> is_array( $theme['listing_image'] ) && count( $theme['listing_image'] ) > 0 ? $theme['listing_image'][0] : '',
 					'last_update'		=> $date->format('Y-m-d'),
 					'homepage'			=> $theme['link'],
-					'description'		=> $theme['content']['rendered'],
+					'description'		=> $theme['description'],
 				);
 			}
-		}
 
-		$res	= array(
-			'info'		=> array(
-				'page'		=> isset( $args->page ) ? $args->page : 1,
-				'results'	=> $headers['X-WP-Total'],
-				'pages'		=> $headers['X-WP-TotalPages'],
-			),
-			'themes'	=> $themes,
-		);
+			$headers	= wp_remote_retrieve_headers( $response );
+
+			$res	= array(
+				'info'		=> array(
+					'page'		=> isset( $args->page ) ? $args->page : 1,
+					'results'	=> $headers['X-WP-Total'],
+					'pages'		=> $headers['X-WP-TotalPages'],
+				),
+				'themes'	=> $themes,
+			);
+
+		}
 
 		return (object) $res;
 	}
