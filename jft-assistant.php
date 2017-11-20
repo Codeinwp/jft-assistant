@@ -35,7 +35,7 @@ define( 'JFT_ASSISTANT_ROOT__', trailingslashit( plugins_url( '', __FILE__ ) ) )
 define( 'JFT_ASSISTANT_RESOURCES__', JFT_ASSISTANT_ROOT__ . 'resources/' );
 define( 'JFT_ASSISTANT_IMAGES__', JFT_ASSISTANT_RESOURCES__ . 'images/' );
 define( 'JFT_ASSISTANT_DEBUG__', false );
-define( 'JFT_ASSISTANT_THEMES_PERPAGE__', 5 );
+define( 'JFT_ASSISTANT_THEMES_PERPAGE__', 40 );
 define( 'JFT_ASSISTANT_THEMES_ENDPOINT__', 'http://justfreethemes.com/wp-json/wp/v2/posts?context=jft-assistant&per_page=' . JFT_ASSISTANT_THEMES_PERPAGE__ . '&orderby=score&order=desc&page=#' );
 define( 'JFT_ASSISTANT_THEMES_CACHE_DAYS__', 1 );
 define( 'JFT_ASSISTANT_THEMES_DISABLE_CACHE__', false );
