@@ -6,7 +6,12 @@
 
     function initAll() {
         if(jft.screen === 'theme-install'){
-            $('ul.filter-links').append('<li><a href="#" data-sort="jft">' + jft.theme_tab + '</a></li>');
+            if(jft.jft_page){
+                $('div.wp-filter').remove();
+                $('h1').html(jft.tab_name);
+            }else{
+                $('ul.filter-links').append('<li><a href="#" data-sort="jft">' + jft.tab_name + '</a></li>');
+            }
         }
     }
 

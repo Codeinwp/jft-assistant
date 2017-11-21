@@ -18,9 +18,29 @@ class JftAssistant_Admin {
     private function load() {
         add_action( 'admin_enqueue_scripts', array( $this, 'admin_enqueue_scripts' ) );
         add_action( 'upgrader_process_complete', array( $this, 'post_theme_install' ), 10, 2 );
-        add_filter( 'themes_api', array( $this, 'themes_api' ), 10, 3 );
+        add_action( 'admin_menu', array( $this, 'admin_menu' ) );
+
+		add_filter( 'themes_api', array( $this, 'themes_api' ), 10, 3 );
         add_filter( 'themes_api_result', array( $this, 'themes_api_result' ), 10, 3 );
+        add_filter( 'install_themes_tabs', array( $this, 'install_themes_tabs' ) );
     }
+
+    /**
+    * Create the menu item for the standalone page.
+    */
+	function admin_menu() {
+		add_submenu_page( 'themes.php', __( 'Just Free Themes', JFT_ASSISTANT_SLUG__ ), __( 'Just Free Themes', JFT_ASSISTANT_SLUG__ ), 'manage_options', add_query_arg( array( 'browse' => 'jft', 'pg' => 'jft' ), '/theme-install.php' ) );
+	}
+
+    /**
+    * Remove the upload button on the standalone page.
+    */
+	function install_themes_tabs( $array ) {
+		if ( isset( $_GET['pg'] ) && 'jft' === $_GET['pg'] ) {
+			return null;
+		}
+		return $array;
+	}
 
 	/**
 	 * Fires when the upgrader process is complete.
@@ -150,7 +170,7 @@ class JftAssistant_Admin {
 		}
 
 		$page		= isset( $args->page ) ? $args->page : 1;
-		$key		= sprintf( '%s_response_%d_%d', JFT_ASSISTANT_SLUG__, $page, JFT_ASSISTANT_THEMES_PERPAGE__ );
+		$key		= sprintf( '%s_response_%d_%d_%d', JFT_ASSISTANT_VERSION__, JFT_ASSISTANT_SLUG__, $page, JFT_ASSISTANT_THEMES_PERPAGE__ );
 		$response	= get_transient( $key );
 
 		if ( false === $response ) {
@@ -183,7 +203,7 @@ class JftAssistant_Admin {
 		$themes		= array();
 		$args		= (object) array();
 		for ( $page = 1; $page < 100; $page++ ) {
-			$response	= get_transient( sprintf( '%s_response_%d_%d', JFT_ASSISTANT_SLUG__, $page, JFT_ASSISTANT_THEMES_PERPAGE__ ) );
+			$response	= get_transient( sprintf( '%s_response_%d_%d_%d', JFT_ASSISTANT_VERSION__, JFT_ASSISTANT_SLUG__, $page, JFT_ASSISTANT_THEMES_PERPAGE__ ) );
 			if ( false === $response ) {
 				// thats it, we are done. No more pages.
 				break;
@@ -196,6 +216,9 @@ class JftAssistant_Admin {
 		return array( 'themes' => $themes );
 	}
 
+    /**
+    * Parse the response from the API or the transient.
+    */
 	function parse_response( $response, $args, $return_object ) {
 		$json		= json_decode( wp_remote_retrieve_body( $response ), true );
 		$res		= array();
@@ -264,7 +287,8 @@ class JftAssistant_Admin {
         wp_enqueue_script( 'jft-assistant', JFT_ASSISTANT_RESOURCES__ . 'admin/js/jft-assistant.js', array( 'jquery' ) );
         wp_localize_script( 'jft-assistant', 'jft', array(
 			'screen'	=> $current_screen->id,
-			'theme_tab'	=> __( 'Just Free Themes', JFT_ASSISTANT_SLUG__ ),
+			'tab_name'	=> __( 'Just Free Themes', JFT_ASSISTANT_SLUG__ ),
+			'jft_page'	=> isset( $_GET['pg'] ) && 'jft' === $_GET['pg'],
         ));
 
         wp_register_style( 'jft-assistant', JFT_ASSISTANT_RESOURCES__ . 'admin/css/jft-assistant.css' );
