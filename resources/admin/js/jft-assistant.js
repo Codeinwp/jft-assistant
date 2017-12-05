@@ -5,57 +5,14 @@
     });
 
     function initAll() {
-        $('#jft-theme').on('keyup', function(e){
-            showSpinner($(this));
-            $.ajax({
-                url     : ajaxurl,
-                method  : 'post',
-                data    : {
-                    'action'    : jft.ajax['action'],
-                    'nonce'     : jft.ajax['nonce'],
-                    '_action'   : 'search',
-                    'name'      : $(this).val()
-                },
-                success : function(data){
-                    if(data.success){
-                        $.each(data.data.data.ids, function(index, id){
-                            $('<div class="jft-theme" data-jft-id="' + id + '"><img src="' + jft.meta['base_url'] + id + '.png"></div>').appendTo($('#jft-search-results'));
-                        });
-                    }
-                    $('.jft-theme').on('click', function(e){
-                        download($(this), $(this).attr('data-jft-id'));
-                    });
-                    hideSpinner();
-                }
-            });
-        });
-    }
-
-    function download(element, id) {
-        showSpinner(element);
-        $.ajax({
-            url     : ajaxurl,
-            method  : 'post',
-            data    : {
-                'action'    : jft.ajax['action'],
-                'nonce'     : jft.ajax['nonce'],
-                '_action'   : 'download',
-                'id'        : id
-            },
-            success : function(data){
-                $('<div class="jft-installation">' + data + '</div>').appendTo(element);
-                hideSpinner();
+        if(jft.screen === 'theme-install'){
+            if(jft.jft_page){
+                $('div.wp-filter').remove();
+                $('h1').html(jft.tab_name);
+            }else{
+                $('ul.filter-links').append('<li><a href="#" data-sort="jft">' + jft.tab_name + '</a></li>');
             }
-        });
-    }
-
-    function showSpinner(element) {
-        element.parent().append('<div class="jft-spinner"></div>');
-        $('.jft-spinner').show();
-    }
-
-    function hideSpinner() {
-        $('.jft-spinner').remove().hide();
+        }
     }
 
 
