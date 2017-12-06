@@ -30,11 +30,15 @@ class JftAssistant_Plugin {
     */
     public function activate() {
         JftAssistant_Log_Debug::init();
+        new JftAssistant_Admin();
+		// load the first page into the cache.
+		do_action( 'jft_assistant_load_themes', 1 );
     }
 
     /**
     * Called whtn the plugin is deactivate
     */
     public function deactivate() {
+		// empty.
     }
 }
