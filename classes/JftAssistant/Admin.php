@@ -170,7 +170,7 @@ class JftAssistant_Admin {
 		}
 
 		$page		= isset( $args->page ) ? $args->page : 1;
-		$key		= sprintf( '%s_response_%d_%d_%d', JFT_ASSISTANT_VERSION__, JFT_ASSISTANT_SLUG__, $page, JFT_ASSISTANT_THEMES_PERPAGE__ );
+		$key		= sprintf( '%s_response_%d_%d_%d', JFT_ASSISTANT_SLUG__, JFT_ASSISTANT_VERSION__, $page, JFT_ASSISTANT_THEMES_PERPAGE__ );
 		$response	= get_transient( $key );
 
 		if ( false === $response ) {
@@ -203,7 +203,7 @@ class JftAssistant_Admin {
 		$themes		= array();
 		$args		= (object) array();
 		for ( $page = 1; $page < 100; $page++ ) {
-			$response	= get_transient( sprintf( '%s_response_%d_%d_%d', JFT_ASSISTANT_VERSION__, JFT_ASSISTANT_SLUG__, $page, JFT_ASSISTANT_THEMES_PERPAGE__ ) );
+			$response	= get_transient( sprintf( '%s_response_%d_%d_%d', JFT_ASSISTANT_SLUG__, JFT_ASSISTANT_VERSION__, $page, JFT_ASSISTANT_THEMES_PERPAGE__ ) );
 			if ( false === $response ) {
 				// thats it, we are done. No more pages.
 				break;
