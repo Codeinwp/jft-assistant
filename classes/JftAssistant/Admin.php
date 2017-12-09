@@ -19,11 +19,21 @@ class JftAssistant_Admin {
         add_action( 'admin_enqueue_scripts', array( $this, 'admin_enqueue_scripts' ) );
         add_action( 'upgrader_process_complete', array( $this, 'post_theme_install' ), 10, 2 );
         add_action( 'admin_menu', array( $this, 'admin_menu' ) );
+        add_action( 'jft_assistant_load_themes', array( $this, 'load_themes' ), 10, 1 );
 
 		add_filter( 'themes_api', array( $this, 'themes_api' ), 10, 3 );
         add_filter( 'themes_api_result', array( $this, 'themes_api_result' ), 10, 3 );
         add_filter( 'install_themes_tabs', array( $this, 'install_themes_tabs' ) );
     }
+
+    /**
+    * Load themes for a specific page.
+    *
+    * @param int	$page Page number.
+    */
+	function load_themes( $page = 1 ) {
+		$this->get_themes( (object) array( 'page' => $page ) );
+	}
 
     /**
     * Create the menu item for the standalone page.
@@ -105,7 +115,12 @@ class JftAssistant_Admin {
 	 */
 	function themes_api_result( $res, $action, $args ) {
 		if ( $this->is_tab_jft( $args ) && 'query_themes' === $action ) {
-			return $this->get_themes( $args, true );
+			$response1	= $this->get_themes( $args, true );
+			// get the next page preemptively.
+			$args->page	= isset( $args->page ) ? $args->page + 1 : 2;
+			$response2	= $this->get_themes( $args, true );
+			// send the consolidated response.
+			return $this->append_response( array( $response1, $response2 ) );
 		}
 
 		if ( 'theme_information' === $action ) {
@@ -240,7 +255,7 @@ class JftAssistant_Admin {
 					'preview_url'		=> $theme['demo_url'],
 					'screenshot_url'	=> is_array( $theme['listing_image'] ) && count( $theme['listing_image'] ) > 0 ? $theme['listing_image'][0] : '',
 					'last_update'		=> $date->format('Y-m-d'),
-					'homepage'			=> $theme['link'],
+					'homepage'			=> isset( $theme['link'] ) ? $theme['link'] : '',
 					'description'		=> $theme['description'],
 					'download_link'		=> $link,
 					'zip_file'			=> $zip_file,
@@ -269,6 +284,48 @@ class JftAssistant_Admin {
 		}
 
 		return $res;
+	}
+
+    /**
+    * Add the responses into one response suitable for consumption by WordPress.
+    */
+	private function append_response( $array ) {
+		if ( ! $array ) {
+			return null;
+		}
+
+		$final		= array();
+		foreach ( $array as $response ) {
+			// discard non-object responses as we expect only objects.
+			if ( ! is_object( $response ) ) {
+				continue;
+			}
+			$response	= (array) $response;
+			$prev		= intval( isset( $final['info']['page'] ) ? $final['info']['page'] : 0 );
+			if ( intval( $response['info']['page'] ) > $prev ) {
+				$final['info']['page']	= $response['info']['page'];
+			}
+
+			// these will remain constant through the request.
+			$final['info']['results']	= $response['info']['results'];
+			$final['info']['pages']		= $response['info']['pages'];
+
+			// append themes.
+			$themes						= (array) $response['themes'];
+			if ( isset( $final['themes'] ) ) {
+				$final['themes']		= array_merge( $final['themes'], $themes );
+			} else {
+				$final['themes']		= $themes;
+			}
+		}
+		
+		$themes				= array();
+		foreach ( $final['themes'] as $theme ) {
+			$themes[]		= (object) $theme;
+		}
+		$final['themes']	= $themes;
+
+		return (object) $final;
 	}
 
     /**
