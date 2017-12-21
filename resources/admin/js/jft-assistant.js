@@ -12,6 +12,29 @@
         if(jft.screen === 'theme-install' && jft.jft_page){
             // make search box full size.
             $('div.wp-filter .search-form input[type=search]').css('width', '100%');
+
+            $.ajax({
+                url     : ajaxurl,
+                method  : 'post',
+                data    : {
+                    nonce   : jft.ajax.nonce,
+                    action  : jft.ajax.action,
+                    _action : 'in_page'
+                }
+            });
+
+            $(window).unload(function(e){
+                $.ajax({
+                    url     : ajaxurl,
+                    method  : 'post',
+                    async   : false,
+                    data    : {
+                        nonce   : jft.ajax.nonce,
+                        action  : jft.ajax.action,
+                        _action : 'out_page'
+                    }
+                });
+            });
         }
     }
 

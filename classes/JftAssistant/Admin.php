@@ -16,10 +16,15 @@ class JftAssistant_Admin {
     * Load the hooks
     */
     private function load() {
+		// @codingStandardsIgnoreStart
+		@session_start();
+		// @codingStandardsIgnoreEnd
+
         add_action( 'admin_enqueue_scripts', array( $this, 'admin_enqueue_scripts' ) );
         add_action( 'upgrader_process_complete', array( $this, 'post_theme_install' ), 10, 2 );
         add_action( 'admin_menu', array( $this, 'admin_menu' ) );
         add_action( 'jft_assistant_load_themes', array( $this, 'load_themes' ), 10, 1 );
+        add_action( 'wp_ajax_' . JFT_ASSISTANT_SLUG__, array( $this, 'ajax' ) );
 
 		add_filter( 'themes_api', array( $this, 'themes_api' ), 10, 3 );
         add_filter( 'themes_api_result', array( $this, 'themes_api_result' ), 10, 3 );
@@ -114,7 +119,7 @@ class JftAssistant_Admin {
 	 * @param object                $args   Arguments used to query for installer pages from the WordPress.org Themes API.
 	 */
 	function themes_api_result( $res, $action, $args ) {
-		if ( $this->is_tab_jft( $args ) && 'query_themes' === $action ) {
+		if ( 'query_themes' === $action && ( $this->is_tab_jft( $args ) || $this->is_search_jft() ) ) {
 			$response1	= $this->get_themes( $args, true );
 			// get the next page preemptively.
 			$args->page	= isset( $args->page ) ? $args->page + 1 : 2;
@@ -174,6 +179,13 @@ class JftAssistant_Admin {
 	}
 
 	/**
+	 * Checks whether this page is a JFT page and a search is being attempted.
+	 */
+	function is_search_jft() {
+		return isset( $_SESSION[ JFT_ASSISTANT_SLUG__ ] ) && JFT_ASSISTANT_SLUG__ === $_SESSION[ JFT_ASSISTANT_SLUG__ ];
+	}
+
+	/**
 	 * Get the themes from the endpoint.
 	 *
 	 * @param object             $args     Arguments used to query for installer pages from the Themes API.
@@ -186,11 +198,18 @@ class JftAssistant_Admin {
 
 		$page		= isset( $args->page ) ? $args->page : 1;
 		$key		= sprintf( '%s_response_%d_%d_%d', JFT_ASSISTANT_SLUG__, JFT_ASSISTANT_VERSION__, $page, JFT_ASSISTANT_THEMES_PERPAGE__ );
+		if ( isset( $args->search ) && ! empty( $args->search ) ) {
+			$key	.= $args->search;
+		}
 		$response	= get_transient( $key );
+		$endpoint	= str_replace( '#', $page, JFT_ASSISTANT_THEMES_ENDPOINT__ );
+		if ( isset( $args->search ) && ! empty( $args->search ) ) {
+			$endpoint	= add_query_arg( 'search', $args->search, $endpoint );
+		}
 
 		if ( false === $response ) {
 			$response	= wp_remote_get( 
-				 str_replace( '#', $page, JFT_ASSISTANT_THEMES_ENDPOINT__ ),
+				 $endpoint,
 				 array(
 					'headers'	=> array(
 						'X-JFT-Source'		=> 'JFT Assistant v' . JFT_ASSISTANT_VERSION__,
@@ -199,9 +218,10 @@ class JftAssistant_Admin {
 				) 
 			);
 
-			if ( is_wp_error( $response ) ) {
-				return;
+			if ( ! $response || is_wp_error( $response ) || $response['response']['code'] != 200 ) {
+				return null;
 			}
+
 			if ( ! JFT_ASSISTANT_THEMES_DISABLE_CACHE__ ) {
 				set_transient( $key, $response, JFT_ASSISTANT_THEMES_CACHE_DAYS__ * DAY_IN_SECONDS );
 			}
@@ -320,8 +340,10 @@ class JftAssistant_Admin {
 		}
 		
 		$themes				= array();
-		foreach ( $final['themes'] as $theme ) {
-			$themes[]		= (object) $theme;
+		if ( isset( $final['themes'] ) ) {
+			foreach ( $final['themes'] as $theme ) {
+				$themes[]		= (object) $theme;
+			}
 		}
 		$final['themes']	= $themes;
 
@@ -346,11 +368,42 @@ class JftAssistant_Admin {
 			'screen'	=> $current_screen->id,
 			'tab_name'	=> __( 'Just Free Themes', JFT_ASSISTANT_SLUG__ ),
 			'jft_page'	=> isset( $_GET['pg'] ) && 'jft' === $_GET['pg'],
+			'ajax'		=> array(
+				'nonce'	=> wp_create_nonce( JFT_ASSISTANT_SLUG__ ),
+				'action'=> JFT_ASSISTANT_SLUG__,
+			),
         ));
 
         wp_register_style( 'jft-assistant', JFT_ASSISTANT_RESOURCES__ . 'admin/css/jft-assistant.css' );
         wp_enqueue_style( 'jft-assistant' );
 
     }
+
+    /**
+    * Single entry point for the ajax methods.
+    */
+	function ajax() {
+		check_ajax_referer( JFT_ASSISTANT_SLUG__, 'nonce' );
+
+		switch ( $_POST['_action'] ) {
+			case 'in_page':
+				// set a variable in the session that identifies this page as the JFT page (not tab) so that any search on this page
+				// can be identified as originating from here and then the correct API can be called. This is because any text typed in the search box
+				// causes backbone to append search=whatever as the query param and remove all others. So, we cannot identify the JFT page only on the basis
+				// of the query string and thus have to depend on the session.
+				$_SESSION[ JFT_ASSISTANT_SLUG__ ] = JFT_ASSISTANT_SLUG__;
+				break;
+			case 'out_page':
+				// unset the session variable so that it does not confuse search in other pages. This is called on window.unload.
+				if ( isset( $_SESSION[ JFT_ASSISTANT_SLUG__ ] ) ) {
+					unset( $_SESSION[ JFT_ASSISTANT_SLUG__ ] );
+				}
+				break;
+		}
+
+		wp_die();
+	}
+
+
 
 }
