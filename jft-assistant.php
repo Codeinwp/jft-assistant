@@ -8,7 +8,7 @@
  * Author: Someone
  * Author URI: http://www.something.com
  * License: GPL2
- * Text-Domain: __jft_assistant_
+ * Text-Domain: jft-assistant
  * Domain Path: /languages
  */
 
