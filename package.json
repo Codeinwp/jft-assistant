@@ -1,0 +1,23 @@
+{
+  "name": "jft-assistant",
+  "version": "1.0.0",
+  "description": "JFT Assistant",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Codeinwp/jft-assistant.git"
+  },
+  "keywords": [
+    "wordpress-plugin"
+  ],
+  "textdomain": "jft-assistant",
+  "category": "plugins",
+  "author": "ThemeIsle <friends@themeisle.com>",
+  "license": "GPL-2.0+",
+  "devDependencies": {
+    "grunt-plugin-fleet": "github:codeinwp/grunt-plugin-fleet",
+    "load-project-config": "~0.2.0"
+  },
+  "dependencies": {
+    "grunt": "^1.0.1"
+  }
+}

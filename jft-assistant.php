@@ -1,16 +1,17 @@
 <?php
 /**
-* Plugin Name: JFT Assistant
-* Contributors: rozroz
-* Plugin URI: http://www.something.com
-* Description: Blah Blah
-* Version: 1.0
-* Author: Someone
-* Author URI: http://www.something.com
-* License: GPL2
-* Text-Domain: __jft_assistant_
-* Domain Path: /languages
-*/
+ * Plugin Name: JFT Assistant
+ * Contributors: rozroz
+ * Plugin URI: http://www.something.com
+ * Description: Blah Blah
+ * Version: 1.0
+ * Author: Someone
+ * Author URI: http://www.something.com
+ * License: GPL2
+ * Text-Domain: __jft_assistant_
+ * Domain Path: /languages
+ */
+
 /*
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License, version 2, as
@@ -42,15 +43,17 @@ define( 'JFT_ASSISTANT_THEMES_DISABLE_CACHE__', false );
 define( 'JFT_THEO_TRACK_ENDPOINT__', 'http://1224da88.ngrok.io/wp-json/theo/v1/track/2/#id#/' );
 
 if ( JFT_ASSISTANT_DEBUG__ ) {
-    @error_reporting( E_ALL );
-    @ini_set( 'display_errors', '1' );
+	// @codingStandardsIgnoreStart
+	@error_reporting( E_ALL );
+	@ini_set( 'display_errors', '1' );
+	// @codingStandardsIgnoreEnd
 }
 
 /**
  * Abort loading if WordPress is upgrading
  */
 if ( defined( 'WP_INSTALLING' ) && WP_INSTALLING ) {
-    return;
+	return;
 }
 
 /**
@@ -65,8 +68,8 @@ function jft_assistant_init() {
 // hook to load plugin
 add_action( 'plugins_loaded', 'jft_assistant_init', 0 );
 
-register_activation_hook( __FILE__ , 'jft_assistant_activate' );
-register_deactivation_hook( __FILE__ , 'jft_assistant_deactivate' );
+register_activation_hook( __FILE__, 'jft_assistant_activate' );
+register_deactivation_hook( __FILE__, 'jft_assistant_deactivate' );
 
 /**
  * Called when plugin is activated
