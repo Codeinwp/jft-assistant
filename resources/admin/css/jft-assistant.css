@@ -19,3 +19,177 @@
 .jft-theme img {
 	max-width: 100%;
 }
+
+/*
+Next code must be prefixed with custom jft class.
+ */
+
+/*!* Search box *!*/
+/*.theme-install-php .wp-filter {*/
+	/*padding: 0 10px;*/
+/*}*/
+
+/*!* Theme box *!*/
+/*.theme-browser .theme {*/
+	/*border: none;*/
+	/*border-radius: 3px;*/
+	/*box-shadow: 0 2px 5px rgba(0,0,0,.15);*/
+/*}*/
+
+/*.theme-browser .theme:focus {*/
+	/*border: none;*/
+	/*box-shadow: 0 2px 5px rgba(0,0,0,.15);*/
+	/*outline: none;*/
+/*}*/
+
+/*.theme-browser .theme .more-details,*/
+/*.theme-browser .theme:hover .more-details,*/
+/*.theme-browser .theme:focus .more-details {*/
+	/*visibility: hidden;*/
+	/*opacity: 0;*/
+/*}*/
+
+/*!* Theme title *!*/
+/*.theme-browser .theme .theme-name {*/
+	/*background: #f6f8fa;*/
+	/*border-radius: 0 0 3px 3px;*/
+	/*box-shadow: none;*/
+	/*color: #39424b;*/
+	/*font-size: 18px;*/
+	/*font-weight: 600;*/
+	/*letter-spacing: -0.025em;*/
+	/*padding: 20px 15px;*/
+	/*-webkit-transition: 0.3s ease;*/
+	/*-moz-transition: 0.3s ease;*/
+	/*-ms-transition: 0.3s ease;*/
+	/*-o-transition: 0.3s ease;*/
+	/*transition: 0.3s ease;*/
+/*}*/
+
+/*.theme-browser .theme:hover .theme-name {*/
+	/*color: #ff5964;*/
+/*}*/
+
+/*!* Screenshot *!*/
+/*.theme-browser .theme:hover .theme-screenshot {*/
+	/*background: transparent;*/
+/*}*/
+
+/*.theme-browser .theme .theme-screenshot img {*/
+	/*border-radius: 3px;*/
+/*}*/
+
+/*.theme-browser .theme:hover .theme-screenshot img,*/
+/*.theme-browser.rendered .theme:hover .theme-screenshot img,*/
+/*.theme-browser .theme:focus .theme-screenshot img,*/
+/*.theme-browser.rendered .theme:focus .theme-screenshot img {*/
+	/*animation: imgAnim 0.3s;*/
+	/*opacity: 1;*/
+/*}*/
+
+/*!* Buttons *!*/
+/*.theme-browser .theme .theme-actions {*/
+	/*background: transparent;*/
+	/*border-left: none;*/
+	/*box-shadow: none;*/
+	/*opacity: 1;*/
+	/*padding: 0;*/
+	/*right: 15px;*/
+/*}*/
+
+/*.theme-browser .theme .theme-actions .button {*/
+	/*border: 1px solid;*/
+	/*border-radius: 3px;*/
+	/*box-shadow: none;*/
+	/*color: #fff;*/
+	/*font-size: 12px;*/
+	/*font-weight: 600;*/
+	/*letter-spacing: .05em;*/
+	/*line-height: 18px;*/
+	/*height: auto;*/
+	/*padding: 5px 8px;*/
+	/*text-shadow: none;*/
+	/*text-transform: uppercase;*/
+	/*-webkit-transition: 0.3s ease;*/
+	/*-moz-transition: 0.3s ease;*/
+	/*-ms-transition: 0.3s ease;*/
+	/*-o-transition: 0.3s ease;*/
+	/*transition: 0.3s ease;*/
+/*}*/
+
+/*.theme-browser .theme .theme-actions .button:active {*/
+	/*transform: translateY(0);*/
+/*}*/
+
+/*.theme-browser .theme .theme-actions .button.theme-install {*/
+	/*background: #ff5964;*/
+	/*border-color: #ff5964;*/
+/*}*/
+
+/*.theme-browser .theme .theme-actions .button.theme-install:hover {*/
+	/*background: #f04348;*/
+/*}*/
+
+/*.theme-browser .theme .theme-actions .button.install-theme-preview,*/
+/*.theme-browser .theme .theme-actions .button.load-customize {*/
+	/*background: transparent;*/
+	/*color: #39424b;*/
+/*}*/
+
+/*.theme-browser .theme .theme-actions .button.install-theme-preview:hover,*/
+/*.theme-browser .theme .theme-actions .button.load-customize:hover {*/
+	/*background: #39424b;*/
+	/*border-color: #39424b;*/
+	/*color: #fff;*/
+/*}*/
+
+/*.theme-browser .theme .theme-actions .button.activate {*/
+	/*background: #01BAEF;*/
+	/*border-color: #01BAEF;*/
+/*}*/
+
+/*.theme-browser .theme .theme-actions .button.activate:hover {*/
+	/*background: #39424b;*/
+	/*border-color: #39424b;*/
+/*}*/
+
+/*!* Notice *!*/
+/*.theme-browser .theme .notice {*/
+	/*border: none;*/
+	/*border-radius: 3px 3px 0 0;*/
+/*}*/
+
+/*.theme-browser .theme .notice p {*/
+	/*color: #01BAEF;*/
+	/*font-weight: 700;*/
+	/*letter-spacing: 0.05em;*/
+	/*margin: 0;*/
+	/*padding: 10px 0;*/
+	/*text-align: center;*/
+	/*text-transform: uppercase;*/
+/*}*/
+
+/*.theme-browser .theme .notice-success p:before {*/
+	/*color: #01BAEF;*/
+	/*margin-right: 2px;*/
+/*}*/
+
+/*.theme-browser .theme .notice-success.notice-alt {*/
+	/*background-color: #dff8ff;*/
+/*}*/
+
+/*!* Animations *!*/
+/*@keyframes imgAnim {*/
+	/*0% {*/
+		/*opacity: 1;*/
+		/*transform: scale(1);*/
+	/*}*/
+	/*50% {*/
+		/*opacity: 0.9;*/
+		/*transform: scale(1.03);*/
+	/*}*/
+	/*100% {*/
+		/*opacity: 1;*/
+		/*transform: scale(1);*/
+	/*}*/
+/*}*/
