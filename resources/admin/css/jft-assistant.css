@@ -24,9 +24,20 @@
 Next code must be prefixed with custom jft class.
  */
 
-/*!* Search box *!*/
+/* Search box */
 /*.theme-install-php .wp-filter {*/
 	/*padding: 0 10px;*/
+/*}*/
+
+/*.theme-install-php .wp-filter .search-form input[type=search] {*/
+    /*font-size: 20px;*/
+    /*font-weight: 400;*/
+    /*padding: 10px 15px;*/
+/*}*/
+
+/*.theme-install-php .wp-filter-search:focus {*/
+    /*border-color: #39424b;*/
+    /*box-shadow: none;*/
 /*}*/
 
 /*!* Theme box *!*/
