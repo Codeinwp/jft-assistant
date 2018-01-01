@@ -12,6 +12,7 @@
         if(jft.screen === 'theme-install' && jft.jft_page){
             // make search box full size.
             $('div.wp-filter .search-form input[type=search]').css('width', '100%');
+            $('div.wrap').addClass('jft-page');
 
             $.ajax({
                 url     : ajaxurl,
