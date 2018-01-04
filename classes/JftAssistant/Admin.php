@@ -90,7 +90,7 @@ class JftAssistant_Admin {
 		$theme_id       = null;
 		$themes         = $this->get_themes( (object) array( 'all' => true ), false );
 		foreach ( $themes['themes'] as $slug => $theme ) {
-			if ( $zip_file === $theme['zip_file'] ) {
+			if ( $zip_file === $theme['zip_name'] ) {
 				$theme_id   = $theme['theme_id'];
 				break;
 			}
@@ -101,8 +101,8 @@ class JftAssistant_Admin {
 				str_replace( '#id#', $theme_id, JFT_THEO_TRACK_ENDPOINT__ ),
 				array(
 					'headers'   => array(
-						'X-Theo-User'   => md5( site_url() ),
-						'X-Theo-From'   => 'wpadmin',
+						'X-Theo-User'           => md5( site_url() ),
+						'X-Theo-Source-Type'    => 'wpadmin',
 					),
 				)
 			);
@@ -275,8 +275,8 @@ class JftAssistant_Admin {
 					'last_update'       => $date->format( 'Y-m-d' ),
 					'homepage'          => isset( $theme['link'] ) ? $theme['link'] : '',
 					'description'       => $theme['description'],
-					'download_link'     => $link,
-					'zip_file'          => $zip_file,
+					'download_link'     => $theme['download_url'],
+					'zip_name'          => $theme['zip_name'],
 				);
 				if ( $return_object ) {
 					$themes[]               = (object) $theme_data;
@@ -361,12 +361,14 @@ class JftAssistant_Admin {
 			return array();
 		}
 
+		$jft_page = isset( $_GET['pg'] ) && 'jft' === $_GET['pg'];
+
 		wp_enqueue_script( 'jft-assistant', JFT_ASSISTANT_RESOURCES__ . 'admin/js/jft-assistant.js', array( 'jquery' ) );
 		wp_localize_script(
 			'jft-assistant', 'jft', array(
 				'screen'    => $current_screen->id,
 				'tab_name'  => __( 'Just Free Themes', 'jft-assistant' ),
-				'jft_page'  => isset( $_GET['pg'] ) && 'jft' === $_GET['pg'],
+				'jft_page'  => $jft_page,
 				'ajax'      => array(
 					'nonce' => wp_create_nonce( JFT_ASSISTANT_SLUG__ ),
 					'action' => JFT_ASSISTANT_SLUG__,
@@ -374,9 +376,10 @@ class JftAssistant_Admin {
 			)
 		);
 
-		wp_register_style( 'jft-assistant', JFT_ASSISTANT_RESOURCES__ . 'admin/css/jft-assistant.css' );
-		wp_enqueue_style( 'jft-assistant' );
-
+		if ( $jft_page ) {
+			wp_register_style( 'jft-assistant', JFT_ASSISTANT_RESOURCES__ . 'admin/css/jft-assistant.css' );
+			wp_enqueue_style( 'jft-assistant' );
+		}
 	}
 
 	/**
