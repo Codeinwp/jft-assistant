@@ -40,7 +40,7 @@ define( 'JFT_ASSISTANT_THEMES_PERPAGE__', 48 );
 define( 'JFT_ASSISTANT_THEMES_ENDPOINT__', 'https://justfreethemes.com/wp-json/wp/v2/posts?context=jft-assistant&per_page=' . JFT_ASSISTANT_THEMES_PERPAGE__ . '&page=#' );
 define( 'JFT_ASSISTANT_THEMES_CACHE_DAYS__', 1 );
 define( 'JFT_ASSISTANT_THEMES_DISABLE_CACHE__', false );
-define( 'JFT_THEO_TRACK_ENDPOINT__', 'http://1224da88.ngrok.io/wp-json/theo/v1/track/2/#id#/' );
+define( 'JFT_THEO_TRACK_ENDPOINT__', 'https://justfreethemes.com/wp-json/theo/v1/track/2/#id#/' );
 
 if ( JFT_ASSISTANT_DEBUG__ ) {
 	// @codingStandardsIgnoreStart
