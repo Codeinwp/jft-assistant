@@ -95,7 +95,7 @@ Next code must be prefixed with custom jft class.
 .jft-page .theme:focus .theme-screenshot img,
 .jft-page.rendered .theme:focus .theme-screenshot img {
 	animation: imgAnim 0.3s;
-	opacity: 1;
+	opacity: 1 !important;
 }
 
 /* Buttons */
