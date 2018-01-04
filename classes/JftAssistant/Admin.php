@@ -101,8 +101,8 @@ class JftAssistant_Admin {
 				str_replace( '#id#', $theme_id, JFT_THEO_TRACK_ENDPOINT__ ),
 				array(
 					'headers'   => array(
-						'X-Theo-User'			=> md5( site_url() ),
-						'X-Theo-Source-Type'	=> 'wpadmin',
+						'X-Theo-User'           => md5( site_url() ),
+						'X-Theo-Source-Type'    => 'wpadmin',
 					),
 				)
 			);
@@ -276,7 +276,7 @@ class JftAssistant_Admin {
 					'homepage'          => isset( $theme['link'] ) ? $theme['link'] : '',
 					'description'       => $theme['description'],
 					'download_link'     => $theme['download_url'],
-					'zip_name'          => $theme['zip_name']
+					'zip_name'          => $theme['zip_name'],
 				);
 				if ( $return_object ) {
 					$themes[]               = (object) $theme_data;
