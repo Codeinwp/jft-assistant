@@ -44,7 +44,7 @@ class JftAssistant_Admin {
 	 * Create the menu item for the standalone page.
 	 */
 	function admin_menu() {
-		add_submenu_page( 'themes.php', __( 'Just Free Themes', 'jft-assistant' ), __( 'Just Free Themes', 'jft-assistant' ), 'manage_options', add_query_arg( array( 'browse' => 'jft', 'pg' => 'jft' ), '/theme-install.php' ) );
+		add_submenu_page( 'themes.php', __( 'JustFreeThemes', 'jft-assistant' ), __( 'JustFreeThemes', 'jft-assistant' ), 'manage_options', add_query_arg( array( 'browse' => 'jft', 'pg' => 'jft' ), '/theme-install.php' ) );
 	}
 
 	/**
@@ -367,7 +367,7 @@ class JftAssistant_Admin {
 		wp_localize_script(
 			'jft-assistant', 'jft', array(
 				'screen'    => $current_screen->id,
-				'tab_name'  => __( 'Just Free Themes', 'jft-assistant' ),
+				'tab_name'  => __( 'JustFreeThemes', 'jft-assistant' ),
 				'jft_page'  => $jft_page,
 				'ajax'      => array(
 					'nonce' => wp_create_nonce( JFT_ASSISTANT_SLUG__ ),

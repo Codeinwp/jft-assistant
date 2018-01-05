@@ -1,12 +1,12 @@
 <?php
 /**
  * Plugin Name: JFT Assistant
- * Contributors: rozroz
- * Plugin URI: http://www.something.com
- * Description: Blah Blah
- * Version: 1.0
- * Author: Someone
- * Author URI: http://www.something.com
+ * Contributors: codeinwp,themeisle, rozroz
+ * Plugin URI: https://github.com/Codeinwp/jft-assistant
+ * Description: Allows access to more than 600 awesome, pixel perfect & free WordPress Themes
+ * Version: 1.0.0
+ * Author: JustFreeThemes
+ * Author URI: https://justfreethemes.com
  * License: GPL2
  * Text-Domain: jft-assistant
  * Domain Path: /languages
