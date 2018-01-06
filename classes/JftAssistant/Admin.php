@@ -268,7 +268,7 @@ class JftAssistant_Admin {
 					'name'              => $theme['title_attribute'],
 					'version'           => $theme['version'],
 					'rating'            => $theme['score'],
-					'num_ratings'       => $theme['downloads'],
+					'num_ratings'       => $theme['comments'],
 					'author'            => $theme['author_name'],
 					'preview_url'       => $theme['demo_url'],
 					'screenshot_url'    => is_array( $theme['listing_image'] ) && count( $theme['listing_image'] ) > 0 ? $theme['listing_image'][0] : '',
