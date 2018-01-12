@@ -10,6 +10,7 @@
 
     <rule ref="WordPress-Core">
         <exclude name="Squiz.Commenting.FileComment.SpacingAfterComment" />
+        <exclude name="Generic.Formatting.MultipleStatementAlignment.IncorrectWarning" />
         <exclude name="Generic.Files.LowercasedFilename" />
         <exclude name="Generic.NamingConventions.UpperCaseConstantName" />
         <exclude name="Squiz.Commenting.FunctionComment.MissingParamTag" />
