@@ -7,7 +7,7 @@ Gruntfile.js
 grunt
 phpcs.xml
 node_modules
-logs
+logscom
 package.json
 bin
 tests

@@ -62,9 +62,27 @@ if ( defined( 'WP_INSTALLING' ) && WP_INSTALLING ) {
  * The entry point of the plugin
  */
 function jft_assistant_init() {
+	$vendor_file = JFT_ASSISTANT_DIR__ . 'vendor/autoload.php';
+	if ( is_readable( $vendor_file ) ) {
+		include_once $vendor_file;
+	}
+	add_filter( 'themeisle_sdk_products', 'jft_assistant_sdk' );
 	require_once JFT_ASSISTANT_DIR__ . '/classes/JftAssistant/Autoloader.php';
 	JftAssistant_Autoloader::register();
 	JftAssistant_Plugin::get_instance()->load();
+}
+
+/**
+ * Register sdk of products.
+ *
+ * @param array $products Current sdk products.
+ *
+ * @return array All sdk products.
+ */
+function jft_assistant_sdk( $products ) {
+	$products[] = __FILE__;
+
+	return $products;
 }
 
 // hook to load plugin
