@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name: JFT Assistant
+ * Plugin Name: JustFreeThemes Assistant
  * Contributors: codeinwp,themeisle, rozroz
  * Plugin URI: https://github.com/Codeinwp/jft-assistant
  * Description: Allows access to more than 600 awesome, pixel perfect & free WordPress Themes
@@ -10,6 +10,8 @@
  * License: GPL2
  * Text-Domain: jft-assistant
  * Domain Path: /languages
+ * WordPress Available:  no
+ * Requires License:    no
  */
 
 /*
@@ -29,7 +31,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 define( 'JFT_ASSISTANT_NAME__', 'JFT Assistant' );
 define( 'JFT_ASSISTANT_SLUG__', '__jft_assistant_' );
-define( 'JFT_ASSISTANT_VERSION__', 1.0 );
+define( 'JFT_ASSISTANT_VERSION__', '1.0.0' );
 define( 'JFT_ASSISTANT_DIR__', trailingslashit( plugin_dir_path( __FILE__ ) ) );
 define( 'JFT_ASSISTANT_URL__', plugin_dir_url( __FILE__ ) );
 define( 'JFT_ASSISTANT_ROOT__', trailingslashit( plugins_url( '', __FILE__ ) ) );
