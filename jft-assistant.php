@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name: JFT Assistant
+ * Plugin Name: JustFreeThemes Assistant
  * Contributors: codeinwp,themeisle, rozroz
  * Plugin URI: https://github.com/Codeinwp/jft-assistant
  * Description: Allows access to more than 600 awesome, pixel perfect & free WordPress Themes
@@ -10,6 +10,9 @@
  * License: GPL2
  * Text-Domain: jft-assistant
  * Domain Path: /languages
+ * GitHub Plugin URI: https://github.com/Codeinwp/jft-assistant
+ * WordPress Available:  no
+ * Requires License:    no
  */
 
 /*
@@ -29,7 +32,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 define( 'JFT_ASSISTANT_NAME__', 'JFT Assistant' );
 define( 'JFT_ASSISTANT_SLUG__', '__jft_assistant_' );
-define( 'JFT_ASSISTANT_VERSION__', 1.0 );
+define( 'JFT_ASSISTANT_VERSION__', '1.0.0' );
 define( 'JFT_ASSISTANT_DIR__', trailingslashit( plugin_dir_path( __FILE__ ) ) );
 define( 'JFT_ASSISTANT_URL__', plugin_dir_url( __FILE__ ) );
 define( 'JFT_ASSISTANT_ROOT__', trailingslashit( plugins_url( '', __FILE__ ) ) );
@@ -60,9 +63,47 @@ if ( defined( 'WP_INSTALLING' ) && WP_INSTALLING ) {
  * The entry point of the plugin
  */
 function jft_assistant_init() {
+	$vendor_file = JFT_ASSISTANT_DIR__ . 'vendor/autoload.php';
+	if ( is_readable( $vendor_file ) ) {
+		include_once $vendor_file;
+	}
+	if ( class_exists( 'Puc_v4_Factory' ) ) {
+		$myUpdateChecker = Puc_v4_Factory::buildUpdateChecker(
+			'https://github.com/Codeinwp/jft-assistant/',
+			__FILE__,
+			'jft-assistant'
+		);
+		$myUpdateChecker->setBranch( 'master' );
+	}
+	add_filter( 'themeisle_sdk_products', 'jft_assistant_sdk' );
+	add_filter( 'jft_assistant_enable_licenser', 'jft_assistant_disable_licenser' );
 	require_once JFT_ASSISTANT_DIR__ . '/classes/JftAssistant/Autoloader.php';
 	JftAssistant_Autoloader::register();
 	JftAssistant_Plugin::get_instance()->load();
+}
+
+/**
+ * Disable licenser script.
+ *
+ * @param bool $enable Old status.
+ *
+ * @return bool Licenser status.
+ */
+function jft_assistant_disable_licenser( $enable ) {
+	return false;
+}
+
+/**
+ * Register sdk of products.
+ *
+ * @param array $products Current sdk products.
+ *
+ * @return array All sdk products.
+ */
+function jft_assistant_sdk( $products ) {
+	$products[] = __FILE__;
+
+	return $products;
 }
 
 // hook to load plugin
