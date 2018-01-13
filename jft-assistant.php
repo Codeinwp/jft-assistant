@@ -10,6 +10,7 @@
  * License: GPL2
  * Text-Domain: jft-assistant
  * Domain Path: /languages
+ * GitHub Plugin URI: https://github.com/Codeinwp/jft-assistant
  * WordPress Available:  no
  * Requires License:    no
  */
@@ -66,10 +67,30 @@ function jft_assistant_init() {
 	if ( is_readable( $vendor_file ) ) {
 		include_once $vendor_file;
 	}
+	if ( class_exists( 'Puc_v4_Factory' ) ) {
+		$myUpdateChecker = Puc_v4_Factory::buildUpdateChecker(
+			'https://github.com/Codeinwp/jft-assistant/',
+			__FILE__,
+			'jft-assistant'
+		);
+		$myUpdateChecker->setBranch( 'master' );
+	}
 	add_filter( 'themeisle_sdk_products', 'jft_assistant_sdk' );
+	add_filter( 'jft_assistant_enable_licenser', 'jft_assistant_disable_licenser' );
 	require_once JFT_ASSISTANT_DIR__ . '/classes/JftAssistant/Autoloader.php';
 	JftAssistant_Autoloader::register();
 	JftAssistant_Plugin::get_instance()->load();
+}
+
+/**
+ * Disable licenser script.
+ *
+ * @param bool $enable Old status.
+ *
+ * @return bool Licenser status.
+ */
+function jft_assistant_disable_licenser( $enable ) {
+	return false;
 }
 
 /**

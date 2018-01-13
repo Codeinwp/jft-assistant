@@ -21,16 +21,15 @@ module.exports = {
 			prefix: 'Version\\:\.*\\s'
 		},
 		src: [
-			'feedzy-rss-feed.php',
-			'css/feedzy-rss-feeds.css',
+			'jft-assistant.php'
 		]
 	},
 	class: {
 		options: {
-			prefix: '\\.*version\.*\\s=\.*\\s\''
+            prefix: 'JFT_ASSISTANT_VERSION__\'\,\\s+\''
 		},
 		src: [
-			'includes/feedzy-rss-feeds.php',
+			'jft-assistant.php',
 		]
 	}
 };
