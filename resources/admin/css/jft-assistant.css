@@ -1,18 +1,19 @@
 .jft-spinner {
-	background: url('/wp-admin/images/wpspin_light.gif') no-repeat;
-	background-size: 16px 16px;
 	display: none;
-	margin: auto;
-	opacity: .7;
-	filter: alpha(opacity=70);
 	width: 16px;
 	height: 16px;
+	margin: auto;
+	opacity: 0.7;
+	background: url("/wp-admin/images/wpspin_light.gif") no-repeat;
+	background-size: 16px 16px;
+
+	filter: alpha(opacity=70);
 }
 
 .jft-theme {
 	float: left;
-	margin: 1%;
 	width: 30%;
+	margin: 1%;
 	cursor: pointer;
 }
 
@@ -30,27 +31,27 @@ Next code must be prefixed with custom jft class.
 }
 
 .jft-page .wp-filter .search-form input[type=search] {
-    font-size: 20px;
-    font-weight: 400;
-    padding: 10px 15px;
+	padding: 10px 15px;
+	font-size: 20px;
+	font-weight: 400;
 }
 
 .jft-page .wp-filter-search:focus {
-    border-color: #39424b;
-    box-shadow: none;
+	border-color: #39424b;
+	box-shadow: none;
 }
 
 /* Theme box */
 .jft-page .theme {
 	border: none;
 	border-radius: 3px;
-	box-shadow: 0 2px 5px rgba(0,0,0,.15);
+	box-shadow: 0 2px 5px rgba(0,0,0,0.15);
 }
 
 .jft-page .theme:focus {
 	border: none;
-	box-shadow: 0 2px 5px rgba(0,0,0,.15);
 	outline: none;
+	box-shadow: 0 2px 5px rgba(0,0,0,0.15);
 }
 
 .jft-page .theme .more-details,
@@ -62,18 +63,15 @@ Next code must be prefixed with custom jft class.
 
 /* Theme title */
 .jft-page .theme .theme-name {
-	background: #f6f8fa;
+	padding: 20px 15px;
 	border-radius: 0 0 3px 3px;
-	box-shadow: none;
 	color: #39424b;
+	background: #f6f8fa;
+	box-shadow: none;
 	font-size: 18px;
 	font-weight: 600;
 	letter-spacing: -0.025em;
-	padding: 20px 15px;
 	-webkit-transition: 0.3s ease;
-	-moz-transition: 0.3s ease;
-	-ms-transition: 0.3s ease;
-	-o-transition: 0.3s ease;
 	transition: 0.3s ease;
 }
 
@@ -94,47 +92,47 @@ Next code must be prefixed with custom jft class.
 .jft-page.rendered .theme:hover .theme-screenshot img,
 .jft-page .theme:focus .theme-screenshot img,
 .jft-page.rendered .theme:focus .theme-screenshot img {
-	animation: imgAnim 0.3s;
 	opacity: 1 !important;
+	-webkit-animation: imgAnim 0.3s;
+	animation: imgAnim 0.3s;
 }
 
 /* Buttons */
 .jft-page .theme .theme-actions {
-	background: transparent;
-	border-left: none;
-	box-shadow: none;
-	opacity: 1;
-	padding: 0;
 	right: 15px;
+	padding: 0;
+	border-left: none;
+	opacity: 1;
+	background: transparent;
+	box-shadow: none;
 }
 
 .jft-page .theme .theme-actions .button {
-	border: 1px solid;
-	border-radius: 3px;
-	box-shadow: none;
-	color: #fff;
-	font-size: 12px;
-	font-weight: 600;
-	letter-spacing: .05em;
-	line-height: 18px;
 	height: auto;
 	padding: 5px 8px;
+	border: 1px solid;
+	border-radius: 3px;
+	color: #fff;
+	box-shadow: none;
 	text-shadow: none;
+	font-size: 12px;
+	font-weight: 600;
+	line-height: 18px;
+	letter-spacing: 0.05em;
 	text-transform: uppercase;
 	-webkit-transition: 0.3s ease;
-	-moz-transition: 0.3s ease;
-	-ms-transition: 0.3s ease;
-	-o-transition: 0.3s ease;
 	transition: 0.3s ease;
 }
 
 .jft-page .theme .theme-actions .button:active {
+	-webkit-transform: translateY(0);
+	-ms-transform: translateY(0);
 	transform: translateY(0);
 }
 
 .jft-page .theme .theme-actions .button.theme-install {
-	background: #ff5964;
 	border-color: #ff5964;
+	background: #ff5964;
 }
 
 .jft-page .theme .theme-actions .button.theme-install:hover {
@@ -143,25 +141,25 @@ Next code must be prefixed with custom jft class.
 
 .jft-page .theme .theme-actions .button.install-theme-preview,
 .jft-page .theme .theme-actions .button.load-customize {
-	background: transparent;
 	color: #39424b;
+	background: transparent;
 }
 
 .jft-page .theme .theme-actions .button.install-theme-preview:hover,
 .jft-page .theme .theme-actions .button.load-customize:hover {
-	background: #39424b;
 	border-color: #39424b;
 	color: #fff;
+	background: #39424b;
 }
 
 .jft-page .theme .theme-actions .button.activate {
-	background: #01BAEF;
-	border-color: #01BAEF;
+	border-color: #01baef;
+	background: #01baef;
 }
 
 .jft-page .theme .theme-actions .button.activate:hover {
-	background: #39424b;
 	border-color: #39424b;
+	background: #39424b;
 }
 
 /* Notice */
@@ -171,18 +169,18 @@ Next code must be prefixed with custom jft class.
 }
 
 .jft-page .theme .notice p {
-	color: #01BAEF;
-	font-weight: 700;
-	letter-spacing: 0.05em;
 	margin: 0;
 	padding: 10px 0;
+	color: #01baef;
+	font-weight: 700;
 	text-align: center;
+	letter-spacing: 0.05em;
 	text-transform: uppercase;
 }
 
 .jft-page .theme .notice-success p:before {
-	color: #01BAEF;
 	margin-right: 2px;
+	color: #01baef;
 }
 
 .jft-page .theme .notice-success.notice-alt {
@@ -190,17 +188,42 @@ Next code must be prefixed with custom jft class.
 }
 
 /* Animations */
+@-webkit-keyframes imgAnim {
+	0% {
+		opacity: 1;
+		-webkit-transform: scale(1);
+		transform: scale(1);
+	}
+
+	50% {
+		opacity: 0.9;
+		-webkit-transform: scale(1.03);
+		transform: scale(1.03);
+	}
+
+	100% {
+		opacity: 1;
+		-webkit-transform: scale(1);
+		transform: scale(1);
+	}
+}
+
 @keyframes imgAnim {
 	0% {
 		opacity: 1;
+		-webkit-transform: scale(1);
 		transform: scale(1);
 	}
+
 	50% {
 		opacity: 0.9;
+		-webkit-transform: scale(1.03);
 		transform: scale(1.03);
 	}
+
 	100% {
 		opacity: 1;
+		-webkit-transform: scale(1);
 		transform: scale(1);
 	}
 }

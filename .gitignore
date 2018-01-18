@@ -4,6 +4,7 @@ logs
 dist
 artifact
 vendor
-composer.lock
-bin/
+bin
+tmp
 package-lock.json
+composer.lock

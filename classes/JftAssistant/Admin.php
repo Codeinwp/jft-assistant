@@ -192,6 +192,127 @@ class JftAssistant_Admin {
 	}
 
 	/**
+	 * Get the themes from the endpoint.
+	 *
+	 * @param object $args          Arguments used to query for installer pages from the Themes API.
+	 * @param bool   $return_object Whether to return an object or an array.
+	 */
+	function get_themes( $args, $return_object = true ) {
+		if ( isset( $args->all ) && $args->all ) {
+			return $this->get_all_themes();
+		}
+
+		$page = isset( $args->page ) ? $args->page : 1;
+		$key  = sprintf( '%s_response_%d_%d_%d', JFT_ASSISTANT_SLUG__, str_replace( '.', '', JFT_ASSISTANT_VERSION__ ), $page, JFT_ASSISTANT_THEMES_PERPAGE__ );
+		if ( isset( $args->search ) && ! empty( $args->search ) ) {
+			$key .= $args->search;
+		}
+		$response = get_transient( $key );
+		$endpoint = str_replace( '#', $page, JFT_ASSISTANT_THEMES_ENDPOINT__ );
+		if ( isset( $args->search ) && ! empty( $args->search ) ) {
+			$endpoint = add_query_arg( 'search', $args->search, $endpoint );
+		}
+
+		if ( false === $response ) {
+			$response = wp_remote_get(
+				$endpoint,
+				array(
+					'headers' => array(
+						'X-JFT-Source' => 'JFT Assistant v' . JFT_ASSISTANT_VERSION__,
+					),
+					'timeout' => 180,
+				)
+			);
+
+			if ( ! $response || is_wp_error( $response ) || $response['response']['code'] != 200 ) {
+				return null;
+			}
+
+			if ( ! JFT_ASSISTANT_THEMES_DISABLE_CACHE__ ) {
+				set_transient( $key, $response, JFT_ASSISTANT_THEMES_CACHE_DAYS__ * DAY_IN_SECONDS );
+			}
+		}
+
+		return $this->parse_response( $response, $args, $return_object );
+	}
+
+	/**
+	 * Get all the themes from db, irrespective of pagination.
+	 */
+	function get_all_themes() {
+		$themes = array();
+		$args   = (object) array();
+		for ( $page = 1; $page < 100; $page ++ ) {
+			$response = get_transient( sprintf( '%s_response_%d_%d_%d', JFT_ASSISTANT_SLUG__, str_replace( '.', '', JFT_ASSISTANT_VERSION__ ), $page, JFT_ASSISTANT_THEMES_PERPAGE__ ) );
+			if ( false === $response ) {
+				// thats it, we are done. No more pages.
+				break;
+			}
+			$response = $this->parse_response( $response, $args, false );
+			if ( is_array( $response ) && array_key_exists( 'themes', $response ) ) {
+				$themes = array_merge( $themes, $response['themes'] );
+			}
+		}
+
+		return array( 'themes' => $themes );
+	}
+
+	/**
+	 * Parse the response from the API or the transient.
+	 */
+	function parse_response( $response, $args, $return_object ) {
+		$json = json_decode( wp_remote_retrieve_body( $response ), true );
+		$res  = array();
+		if ( $json ) {
+			$themes = array();
+			foreach ( $json as $theme ) {
+				$date       = DateTime::createFromFormat( 'Y-m-d\TH:i:s', $theme['modified_gmt'] );
+				$link       = $theme['download_url'];
+				$array      = explode( '/', $link );
+				$zip_file   = end( $array );
+				$theme_data = array(
+					'theme_id'       => $theme['theme_id'],
+					'slug'           => $theme['slug'],
+					'name'           => $theme['title_attribute'],
+					'version'        => $theme['version'],
+					'rating'         => $theme['score'],
+					'num_ratings'    => $theme['comments'],
+					'author'         => $theme['author_name'],
+					'preview_url'    => $theme['demo_url'],
+					'screenshot_url' => is_array( $theme['listing_image'] ) && count( $theme['listing_image'] ) > 0 ? $theme['listing_image'][0] : '',
+					'last_update'    => $date->format( 'Y-m-d' ),
+					'homepage'       => isset( $theme['link'] ) ? $theme['link'] : '',
+					'description'    => $theme['description'],
+					'download_link'  => $theme['download_url'],
+					'zip_name'       => $theme['zip_name'],
+				);
+				if ( $return_object ) {
+					$themes[] = (object) $theme_data;
+				} else {
+					$themes[ $theme['slug'] ] = $theme_data;
+				}
+			}
+
+			$headers = wp_remote_retrieve_headers( $response );
+
+			$res = array(
+				'info'   => array(
+					'page'    => isset( $args->page ) ? $args->page : 1,
+					'results' => $headers['X-WP-Total'],
+					'pages'   => $headers['X-WP-TotalPages'],
+				),
+				'themes' => $themes,
+			);
+		}
+
+		if ( $return_object ) {
+			return (object) $res;
+		}
+
+		return $res;
+	}
+
+	/**
 	 * Create the menu item for the standalone page.
 	 */
 	function admin_menu() {

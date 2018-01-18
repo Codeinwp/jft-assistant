@@ -1,10 +1,12 @@
+/* global ajaxurl */
+/* global jft */
 (function($, jft){
 
-    $(document).ready(function(e){
+    $(document).ready(function(){
         initAll();
     });
 
-    $(window).load(function(e){
+    $(window).load(function(){
         initWindow();
     });
 
@@ -32,7 +34,7 @@
                 }
             });
 
-            $(window).unload(function(e){
+            $(window).unload(function(){
                 $.ajax({
                     url     : ajaxurl,
                     method  : 'post',
