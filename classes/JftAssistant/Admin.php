@@ -23,6 +23,7 @@ class JftAssistant_Admin {
 		add_action( 'admin_enqueue_scripts', array( $this, 'admin_enqueue_scripts' ) );
 		add_action( 'upgrader_process_complete', array( $this, 'post_theme_install' ), 10, 2 );
 		add_action( 'admin_menu', array( $this, 'admin_menu' ) );
+		add_action( 'admin_init', array( $this, 'admin_init' ) );
 		add_action( 'jft_assistant_load_themes', array( $this, 'load_themes' ), 10, 1 );
 		add_action( 'wp_ajax_' . JFT_ASSISTANT_SLUG__, array( $this, 'ajax' ) );
 
@@ -32,186 +33,68 @@ class JftAssistant_Admin {
 	}
 
 	/**
+	 * Redirect the plugin on first-time activation to the themes page.
+	 */
+	function admin_init() {
+		global $pagenow;
+		if ( isset( $_GET['activate'] ) && 'plugins.php' === $pagenow ) {
+			$time	= get_option( JFT_ASSISTANT_SLUG__ . 'activation', false );
+			if ( false === $time ) {
+				update_option( JFT_ASSISTANT_SLUG__ . 'activation', time() );
+				wp_safe_redirect( add_query_arg( array( 
+						'browse' => 'jft',
+						'pg'     => 'jft',
+					), admin_url( '/theme-install.php') )
+				);
+				exit;
+			}
+		}
+	}
+
+	/**
 	 * Load themes for a specific page.
 	 *
 	 * @param int $page Page number.
 	 */
 	function load_themes( $page = 1 ) {
-		$this->get_themes( (object) array( 'page' => $page ) );
-	}
-
-	/**
-	 * Create the menu item for the standalone page.
-	 */
-	function admin_menu() {
-		add_submenu_page( 'themes.php', __( 'JustFreeThemes', 'jft-assistant' ), __( 'JustFreeThemes', 'jft-assistant' ), 'manage_options', add_query_arg( array( 'browse' => 'jft', 'pg' => 'jft' ), '/theme-install.php' ) );
-	}
-
-	/**
-	 * Remove the upload button on the standalone page.
-	 */
-	function install_themes_tabs( $array ) {
-		if ( isset( $_GET['pg'] ) && 'jft' === $_GET['pg'] ) {
-			return null;
-		}
-		return $array;
-	}
-
-	/**
-	 * Fires when the upgrader process is complete.
-	 *
-	 * See also {@see 'upgrader_package_options'}.
-	 *
-	 * @param WP_Upgrader $upgrader WP_Upgrader instance. In other contexts, $this, might be a
-	 *                          Theme_Upgrader, Plugin_Upgrader, Core_Upgrade, or Language_Pack_Upgrader instance.
-	 * @param array       $hook_extra {
-	 *     Array of bulk item update data.
-	 *
-	 *     @type string $action       Type of action. Default 'update'.
-	 *     @type string $type         Type of update process. Accepts 'plugin', 'theme', 'translation', or 'core'.
-	 *     @type bool   $bulk         Whether the update process is a bulk update. Default true.
-	 *     @type array  $plugins      Array of the basename paths of the plugins' main files.
-	 *     @type array  $themes       The theme slugs.
-	 *     @type array  $translations {
-	 *         Array of translations update data.
-	 *
-	 *         @type string $language The locale the translation is for.
-	 *         @type string $type     Type of translation. Accepts 'plugin', 'theme', or 'core'.
-	 *         @type string $slug     Text domain the translation is for. The slug of a theme/plugin or
-	 *                                'default' for core translations.
-	 *         @type string $version  The version of a theme, plugin, or core.
-	 *     }
-	 * }
-	 */
-	function post_theme_install( WP_Upgrader $upgrader, $hook_extra ) {
-		$zip_file       = $upgrader->result['destination_name'] . '.zip';
-		// reverse look up to find out the name of the theme that was installed. Cumbersome, but the 'install_theme_complete_actions' filter that should be called,
-		// is not being called so we have to do this.
-		$theme_id       = null;
-		$themes         = $this->get_themes( (object) array( 'all' => true ), false );
-		foreach ( $themes['themes'] as $slug => $theme ) {
-			if ( $zip_file === $theme['zip_name'] ) {
-				$theme_id   = $theme['theme_id'];
-				break;
-			}
-		}
-
-		if ( ! is_null( $theme_id ) ) {
-			wp_remote_get(
-				str_replace( '#id#', $theme_id, JFT_THEO_TRACK_ENDPOINT__ ),
-				array(
-					'headers'   => array(
-						'X-Theo-User'           => md5( site_url() ),
-						'X-Theo-Source-Type'    => 'wpadmin',
-					),
-				)
-			);
-		}
-	}
-
-	/**
-	 * Filters the returned WordPress.org Themes API response.
-	 *
-	 * @param array|object|WP_Error $res    WordPress.org Themes API response.
-	 * @param string                $action Requested action. Likely values are 'theme_information',
-	 *                                      'feature_list', or 'query_themes'.
-	 * @param object                $args   Arguments used to query for installer pages from the WordPress.org Themes API.
-	 */
-	function themes_api_result( $res, $action, $args ) {
-		if ( 'query_themes' === $action && ( $this->is_tab_jft( $args ) || $this->is_search_jft() ) ) {
-			$response1  = $this->get_themes( $args, true );
-			// get the next page preemptively.
-			$args->page = isset( $args->page ) ? $args->page + 1 : 2;
-			$response2  = $this->get_themes( $args, true );
-			// send the consolidated response.
-			return $this->append_response( array( $response1, $response2 ) );
-		}
-
-		if ( 'theme_information' === $action ) {
-			$response   = $this->get_themes( $args, false );
-			if ( isset( $args->slug ) && array_key_exists( $args->slug, $response['themes'] ) ) {
-				return (object) $response['themes'][ $args->slug ];
-			}
-		}
-
-		return $res;
-	}
-
-	/**
-	 * Filters whether to override the WordPress.org Themes API.
-	 *
-	 * Passing a non-false value will effectively short-circuit the WordPress.org API request.
-	 *
-	 * If `$action` is 'query_themes', 'theme_information', or 'feature_list', an object MUST
-	 * be passed. If `$action` is 'hot_tags', an array should be passed.
-	 *
-	 * @param false|object|array $default Whether to override the WordPress.org Themes API. Default false.
-	 * @param string             $action   Requested action. Likely values are 'theme_information',
-	 *                                    'feature_list', or 'query_themes'.
-	 * @param object             $args     Arguments used to query for installer pages from the Themes API.
-	 */
-	function themes_api( $default, $action, $args ) {
-		if ( $this->is_tab_jft( $args ) && 'query_themes' === $action ) {
-			return true;
-		}
-
-		if ( 'theme_information' === $action ) {
-			$response   = $this->get_themes( $args, false );
-			if ( isset( $args->slug ) && array_key_exists( $args->slug, $response['themes'] ) ) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	/**
-	 * Checks whether the tab requesting theme information is the JFT tab or not.
-	 *
-	 * @param object $args     Arguments used to query for installer pages from the Themes API.
-	 */
-	function is_tab_jft( $args ) {
-		$type   = isset( $args->browse ) ? ( strpos( $args->browse, '&' ) !== false ? strstr( $args->browse, '&', true ) : $args->browse ) : '';
-		if ( isset( $args->browse ) && 'jft' === $type ) {
-			return true;
-		}
-		return false;
-	}
-
-	/**
-	 * Checks whether this page is a JFT page and a search is being attempted.
-	 */
-	function is_search_jft() {
-		return isset( $_SESSION[ JFT_ASSISTANT_SLUG__ ] ) && JFT_ASSISTANT_SLUG__ === $_SESSION[ JFT_ASSISTANT_SLUG__ ];
+		$args	= array( 'page' => $page );
+		$this->get_themes( (object) $args );
 	}
 
 	/**
 	 * Get the themes from the endpoint.
 	 *
-	 * @param object $args     Arguments used to query for installer pages from the Themes API.
-	 * @param bool   $return_object     Whether to return an object or an array.
+	 * @param object $args          Arguments used to query for installer pages from the Themes API.
+	 * @param bool   $return_object Whether to return an object or an array.
 	 */
 	function get_themes( $args, $return_object = true ) {
 		if ( isset( $args->all ) && $args->all ) {
 			return $this->get_all_themes();
 		}
 
-		$page       = isset( $args->page ) ? $args->page : 1;
-		$key        = sprintf( '%s_response_%d_%d_%d', JFT_ASSISTANT_SLUG__, JFT_ASSISTANT_VERSION__, $page, JFT_ASSISTANT_THEMES_PERPAGE__ );
+		$page = isset( $args->page ) ? $args->page : 1;
+		$key  = sprintf( '%s_response_%d_%d_%d', JFT_ASSISTANT_SLUG__, str_replace( '.', '', JFT_ASSISTANT_VERSION__ ), $page, JFT_ASSISTANT_THEMES_PERPAGE__ );
 		if ( isset( $args->search ) && ! empty( $args->search ) ) {
-			$key    .= $args->search;
+			$key .= $args->search;
 		}
-		$response   = get_transient( $key );
-		$endpoint   = str_replace( '#', $page, JFT_ASSISTANT_THEMES_ENDPOINT__ );
+		if ( isset( $args->sticky ) && ! empty( $args->sticky ) ) {
+			$key .= 'sticky';
+		}
+		$response = get_transient( $key );
+		$endpoint = str_replace( '#', $page, JFT_ASSISTANT_THEMES_ENDPOINT__ );
 		if ( isset( $args->search ) && ! empty( $args->search ) ) {
-			$endpoint   = add_query_arg( 'search', $args->search, $endpoint );
+			$endpoint = add_query_arg( 'search', $args->search, $endpoint );
+		}
+		if ( isset( $args->sticky ) && ! empty( $args->sticky ) ) {
+			$endpoint = add_query_arg( 'sticky', $args->sticky, $endpoint );
 		}
 
 		if ( false === $response ) {
-			$response   = wp_remote_get(
+			$response = wp_remote_get(
 				$endpoint,
 				array(
-					'headers'   => array(
-						'X-JFT-Source'      => 'JFT Assistant v' . JFT_ASSISTANT_VERSION__,
+					'headers' => array(
+						'X-JFT-Source' => 'JFT Assistant v' . JFT_ASSISTANT_VERSION__,
 					),
 					'timeout' => 180,
 				)
@@ -233,19 +116,20 @@ class JftAssistant_Admin {
 	 * Get all the themes from db, irrespective of pagination.
 	 */
 	function get_all_themes() {
-		$themes     = array();
-		$args       = (object) array();
-		for ( $page = 1; $page < 100; $page++ ) {
-			$response   = get_transient( sprintf( '%s_response_%d_%d_%d', JFT_ASSISTANT_SLUG__, JFT_ASSISTANT_VERSION__, $page, JFT_ASSISTANT_THEMES_PERPAGE__ ) );
+		$themes = array();
+		$args   = (object) array();
+		for ( $page = 1; $page < 100; $page ++ ) {
+			$response = get_transient( sprintf( '%s_response_%d_%d_%d', JFT_ASSISTANT_SLUG__, str_replace( '.', '', JFT_ASSISTANT_VERSION__ ), $page, JFT_ASSISTANT_THEMES_PERPAGE__ ) );
 			if ( false === $response ) {
 				// thats it, we are done. No more pages.
 				break;
 			}
-			$response   = $this->parse_response( $response, $args, false );
+			$response = $this->parse_response( $response, $args, false );
 			if ( is_array( $response ) && array_key_exists( 'themes', $response ) ) {
 				$themes = array_merge( $themes, $response['themes'] );
 			}
 		}
+
 		return array( 'themes' => $themes );
 	}
 
@@ -253,47 +137,47 @@ class JftAssistant_Admin {
 	 * Parse the response from the API or the transient.
 	 */
 	function parse_response( $response, $args, $return_object ) {
-		$json       = json_decode( wp_remote_retrieve_body( $response ), true );
-		$res        = array();
+		$json = json_decode( wp_remote_retrieve_body( $response ), true );
+		$res  = array();
 		if ( $json ) {
-			$themes     = array();
+			$themes = array();
 			foreach ( $json as $theme ) {
-				$date                   = DateTime::createFromFormat( 'Y-m-d\TH:i:s', $theme['modified_gmt'] );
-				$link                   = $theme['download_url'];
-				$array                  = explode( '/', $link );
-				$zip_file               = end( $array );
+				$date       = DateTime::createFromFormat( 'Y-m-d\TH:i:s', $theme['modified_gmt'] );
+				$link       = $theme['download_url'];
+				$array      = explode( '/', $link );
+				$zip_file   = end( $array );
 				$theme_data = array(
-					'theme_id'          => $theme['theme_id'],
-					'slug'              => $theme['slug'],
-					'name'              => $theme['title_attribute'],
-					'version'           => $theme['version'],
-					'rating'            => $theme['score'],
-					'num_ratings'       => $theme['comments'],
-					'author'            => $theme['author_name'],
-					'preview_url'       => $theme['demo_url'],
-					'screenshot_url'    => is_array( $theme['listing_image'] ) && count( $theme['listing_image'] ) > 0 ? $theme['listing_image'][0] : '',
-					'last_update'       => $date->format( 'Y-m-d' ),
-					'homepage'          => isset( $theme['link'] ) ? $theme['link'] : '',
-					'description'       => $theme['description'],
-					'download_link'     => $theme['download_url'],
-					'zip_name'          => $theme['zip_name'],
+					'theme_id'       => $theme['theme_id'],
+					'slug'           => $theme['slug'],
+					'name'           => $theme['title_attribute'],
+					'version'        => $theme['version'],
+					'rating'         => $theme['score'],
+					'num_ratings'    => $theme['comments'],
+					'author'         => $theme['author_name'],
+					'preview_url'    => $theme['demo_url'],
+					'screenshot_url' => is_array( $theme['listing_image'] ) && count( $theme['listing_image'] ) > 0 ? $theme['listing_image'][0] : '',
+					'last_update'    => $date->format( 'Y-m-d' ),
+					'homepage'       => isset( $theme['link'] ) ? $theme['link'] : '',
+					'description'    => $theme['description'],
+					'download_link'  => $theme['download_url'],
+					'zip_name'       => $theme['zip_name'],
 				);
 				if ( $return_object ) {
-					$themes[]               = (object) $theme_data;
+					$themes[] = (object) $theme_data;
 				} else {
 					$themes[ $theme['slug'] ] = $theme_data;
 				}
 			}
 
-			$headers    = wp_remote_retrieve_headers( $response );
+			$headers = wp_remote_retrieve_headers( $response );
 
-			$res    = array(
-				'info'      => array(
-					'page'      => isset( $args->page ) ? $args->page : 1,
-					'results'   => $headers['X-WP-Total'],
-					'pages'     => $headers['X-WP-TotalPages'],
+			$res = array(
+				'info'   => array(
+					'page'    => isset( $args->page ) ? $args->page : 1,
+					'results' => $headers['X-WP-Total'],
+					'pages'   => $headers['X-WP-TotalPages'],
 				),
-				'themes'    => $themes,
+				'themes' => $themes,
 			);
 		}
 
@@ -305,6 +189,146 @@ class JftAssistant_Admin {
 	}
 
 	/**
+	 * Create the menu item for the standalone page.
+	 */
+	function admin_menu() {
+		add_submenu_page(
+			'themes.php', __( 'JustFreeThemes', 'jft-assistant' ), __( 'JustFreeThemes', 'jft-assistant' ), 'manage_options', add_query_arg(
+				array(
+					'browse' => 'jft',
+					'pg'     => 'jft',
+				), '/theme-install.php'
+			)
+		);
+	}
+
+	/**
+	 * Remove the upload button on the standalone page.
+	 */
+	function install_themes_tabs( $array ) {
+		if ( isset( $_GET['pg'] ) && 'jft' === $_GET['pg'] ) {
+			return null;
+		}
+
+		return $array;
+	}
+
+	/**
+	 * Fires when the upgrader process is complete.
+	 *
+	 * See also {@see 'upgrader_package_options'}.
+	 *
+	 * @param WP_Upgrader $upgrader     WP_Upgrader instance. In other contexts, $this, might be a
+	 *                                  Theme_Upgrader, Plugin_Upgrader, Core_Upgrade, or Language_Pack_Upgrader
+	 *                                  instance.
+	 * @param array       $hook_extra   {
+	 *                                  Array of bulk item update data.
+	 *
+	 * @type string       $action       Type of action. Default 'update'.
+	 * @type string       $type         Type of update process. Accepts 'plugin', 'theme', 'translation', or 'core'.
+	 * @type bool         $bulk         Whether the update process is a bulk update. Default true.
+	 * @type array        $plugins      Array of the basename paths of the plugins' main files.
+	 * @type array        $themes       The theme slugs.
+	 * @type array        $translations {
+	 *         Array of translations update data.
+	 *
+	 * @type string       $language     The locale the translation is for.
+	 * @type string       $type         Type of translation. Accepts 'plugin', 'theme', or 'core'.
+	 * @type string       $slug         Text domain the translation is for. The slug of a theme/plugin or
+	 *                                'default' for core translations.
+	 * @type string       $version      The version of a theme, plugin, or core.
+	 *     }
+	 * }
+	 */
+	function post_theme_install( WP_Upgrader $upgrader, $hook_extra ) {
+		$zip_file = $upgrader->result['destination_name'] . '.zip';
+		// reverse look up to find out the name of the theme that was installed. Cumbersome, but the 'install_theme_complete_actions' filter that should be called,
+		// is not being called so we have to do this.
+		$theme_id = null;
+		$themes   = $this->get_themes( (object) array( 'all' => true ), false );
+		foreach ( $themes['themes'] as $slug => $theme ) {
+			if ( $zip_file === $theme['zip_name'] ) {
+				$theme_id = $theme['theme_id'];
+				break;
+			}
+		}
+
+		if ( ! is_null( $theme_id ) ) {
+			wp_remote_get(
+				str_replace( '#id#', $theme_id, JFT_THEO_TRACK_ENDPOINT__ ),
+				array(
+					'headers' => array(
+						'X-Theo-User'        => md5( site_url() ),
+						'X-Theo-Source-Type' => 'wpadmin',
+					),
+				)
+			);
+		}
+	}
+
+	/**
+	 * Filters the returned WordPress.org Themes API response.
+	 *
+	 * @param array|object|WP_Error $res    WordPress.org Themes API response.
+	 * @param string                $action Requested action. Likely values are 'theme_information',
+	 *                                      'feature_list', or 'query_themes'.
+	 * @param object                $args   Arguments used to query for installer pages from the WordPress.org Themes
+	 *                                      API.
+	 */
+	function themes_api_result( $res, $action, $args ) {
+		if ( 'query_themes' === $action && ( $this->is_tab_jft( $args ) || $this->is_search_jft() ) ) {
+			$responses		= array();
+
+			// let's get the sticky themes first if this is the first page of the JFT page.
+			if ( $this->is_tab_jft( $args ) ) {
+				$page = isset( $args->page ) ? $args->page : 1;
+				if ( 1 === $page ) {
+					$responses[]	= $this->get_themes( (object) array( 'sticky' => true ), true );
+				}
+			}
+			
+			$responses[]	= $this->get_themes( $args, true );
+
+			// get the next page preemptively.
+			$args->page		= isset( $args->page ) ? $args->page + 1 : 2;
+			$responses[]	= $this->get_themes( $args, true );
+
+			// send the consolidated response.
+			return $this->append_response( $responses );
+		}
+
+		if ( 'theme_information' === $action ) {
+			$response = $this->get_themes( $args, false );
+			if ( isset( $args->slug ) && array_key_exists( $args->slug, $response['themes'] ) ) {
+				return (object) $response['themes'][ $args->slug ];
+			}
+		}
+
+		return $res;
+	}
+
+	/**
+	 * Checks whether the tab requesting theme information is the JFT tab or not.
+	 *
+	 * @param object $args Arguments used to query for installer pages from the Themes API.
+	 */
+	function is_tab_jft( $args ) {
+		$type = isset( $args->browse ) ? ( strpos( $args->browse, '&' ) !== false ? strstr( $args->browse, '&', true ) : $args->browse ) : '';
+		if ( isset( $args->browse ) && 'jft' === $type ) {
+			return true;
+		}
+
+		return false;
+	}
+
+	/**
+	 * Checks whether this page is a JFT page and a search is being attempted.
+	 */
+	function is_search_jft() {
+		return isset( $_SESSION[ JFT_ASSISTANT_SLUG__ ] ) && JFT_ASSISTANT_SLUG__ === $_SESSION[ JFT_ASSISTANT_SLUG__ ];
+	}
+
+	/**
 	 * Add the responses into one response suitable for consumption by WordPress.
 	 */
 	private function append_response( $array ) {
@@ -312,40 +336,68 @@ class JftAssistant_Admin {
 			return null;
 		}
 
-		$final      = array();
+		$final = array();
 		foreach ( $array as $response ) {
 			// discard non-object responses as we expect only objects.
 			if ( ! is_object( $response ) ) {
 				continue;
 			}
-			$response   = (array) $response;
-			$prev       = intval( isset( $final['info']['page'] ) ? $final['info']['page'] : 0 );
+			$response = (array) $response;
+			$prev     = intval( isset( $final['info']['page'] ) ? $final['info']['page'] : 0 );
 			if ( intval( $response['info']['page'] ) > $prev ) {
-				$final['info']['page']  = $response['info']['page'];
+				$final['info']['page'] = $response['info']['page'];
 			}
 
 			// these will remain constant through the request.
-			$final['info']['results']   = $response['info']['results'];
-			$final['info']['pages']     = $response['info']['pages'];
+			$final['info']['results'] = $response['info']['results'];
+			$final['info']['pages']   = $response['info']['pages'];
 
 			// append themes.
-			$themes                     = (array) $response['themes'];
+			$themes = (array) $response['themes'];
 			if ( isset( $final['themes'] ) ) {
-				$final['themes']        = array_merge( $final['themes'], $themes );
+				$final['themes'] = array_merge( $final['themes'], $themes );
 			} else {
-				$final['themes']        = $themes;
+				$final['themes'] = $themes;
 			}
 		}
 
-		$themes             = array();
+		$themes = array();
 		if ( isset( $final['themes'] ) ) {
 			foreach ( $final['themes'] as $theme ) {
-				$themes[]       = (object) $theme;
+				$themes[] = (object) $theme;
 			}
 		}
-		$final['themes']    = $themes;
+		$final['themes'] = $themes;
 
 		return (object) $final;
+	}
+
+	/**
+	 * Filters whether to override the WordPress.org Themes API.
+	 *
+	 * Passing a non-false value will effectively short-circuit the WordPress.org API request.
+	 *
+	 * If `$action` is 'query_themes', 'theme_information', or 'feature_list', an object MUST
+	 * be passed. If `$action` is 'hot_tags', an array should be passed.
+	 *
+	 * @param false|object|array $default Whether to override the WordPress.org Themes API. Default false.
+	 * @param string             $action  Requested action. Likely values are 'theme_information',
+	 *                                    'feature_list', or 'query_themes'.
+	 * @param object             $args    Arguments used to query for installer pages from the Themes API.
+	 */
+	function themes_api( $default, $action, $args ) {
+		if ( $this->is_tab_jft( $args ) && 'query_themes' === $action ) {
+			return true;
+		}
+
+		if ( 'theme_information' === $action ) {
+			$response = $this->get_themes( $args, false );
+			if ( isset( $args->slug ) && array_key_exists( $args->slug, $response['themes'] ) ) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	/**
@@ -366,11 +418,11 @@ class JftAssistant_Admin {
 		wp_enqueue_script( 'jft-assistant', JFT_ASSISTANT_RESOURCES__ . 'admin/js/jft-assistant.js', array( 'jquery' ) );
 		wp_localize_script(
 			'jft-assistant', 'jft', array(
-				'screen'    => $current_screen->id,
-				'tab_name'  => __( 'JustFreeThemes', 'jft-assistant' ),
-				'jft_page'  => $jft_page,
-				'ajax'      => array(
-					'nonce' => wp_create_nonce( JFT_ASSISTANT_SLUG__ ),
+				'screen'   => $current_screen->id,
+				'tab_name' => __( 'JustFreeThemes', 'jft-assistant' ),
+				'jft_page' => $jft_page,
+				'ajax'     => array(
+					'nonce'  => wp_create_nonce( JFT_ASSISTANT_SLUG__ ),
 					'action' => JFT_ASSISTANT_SLUG__,
 				),
 			)
@@ -406,7 +458,6 @@ class JftAssistant_Admin {
 
 		wp_die();
 	}
-
 
 
 }
