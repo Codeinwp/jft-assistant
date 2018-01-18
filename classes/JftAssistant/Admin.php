@@ -38,13 +38,16 @@ class JftAssistant_Admin {
 	function admin_init() {
 		global $pagenow;
 		if ( isset( $_GET['activate'] ) && 'plugins.php' === $pagenow ) {
-			$time	= get_option( JFT_ASSISTANT_SLUG__ . 'activation', false );
+			$time   = get_option( JFT_ASSISTANT_SLUG__ . 'activation', false );
 			if ( false === $time ) {
 				update_option( JFT_ASSISTANT_SLUG__ . 'activation', time() );
-				wp_safe_redirect( add_query_arg( array( 
-						'browse' => 'jft',
-						'pg'     => 'jft',
-					), admin_url( '/theme-install.php') )
+				wp_safe_redirect(
+					add_query_arg(
+						array(
+							'browse' => 'jft',
+							'pg'     => 'jft',
+						), admin_url( '/theme-install.php' )
+					)
 				);
 				exit;
 			}
@@ -57,7 +60,7 @@ class JftAssistant_Admin {
 	 * @param int $page Page number.
 	 */
 	function load_themes( $page = 1 ) {
-		$args	= array( 'page' => $page );
+		$args   = array( 'page' => $page );
 		$this->get_themes( (object) $args );
 	}
 
@@ -277,21 +280,21 @@ class JftAssistant_Admin {
 	 */
 	function themes_api_result( $res, $action, $args ) {
 		if ( 'query_themes' === $action && ( $this->is_tab_jft( $args ) || $this->is_search_jft() ) ) {
-			$responses		= array();
+			$responses      = array();
 
 			// let's get the sticky themes first if this is the first page of the JFT page.
 			if ( $this->is_tab_jft( $args ) ) {
 				$page = isset( $args->page ) ? $args->page : 1;
 				if ( 1 === $page ) {
-					$responses[]	= $this->get_themes( (object) array( 'sticky' => true ), true );
+					$responses[]    = $this->get_themes( (object) array( 'sticky' => true ), true );
 				}
 			}
-			
-			$responses[]	= $this->get_themes( $args, true );
+
+			$responses[]    = $this->get_themes( $args, true );
 
 			// get the next page preemptively.
-			$args->page		= isset( $args->page ) ? $args->page + 1 : 2;
-			$responses[]	= $this->get_themes( $args, true );
+			$args->page     = isset( $args->page ) ? $args->page + 1 : 2;
+			$responses[]    = $this->get_themes( $args, true );
 
 			// send the consolidated response.
 			return $this->append_response( $responses );
