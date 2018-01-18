@@ -23,6 +23,7 @@ class JftAssistant_Admin {
 		add_action( 'admin_enqueue_scripts', array( $this, 'admin_enqueue_scripts' ) );
 		add_action( 'upgrader_process_complete', array( $this, 'post_theme_install' ), 10, 2 );
 		add_action( 'admin_menu', array( $this, 'admin_menu' ) );
+		add_action( 'admin_init', array( $this, 'admin_init' ) );
 		add_action( 'jft_assistant_load_themes', array( $this, 'load_themes' ), 10, 1 );
 		add_action( 'wp_ajax_' . JFT_ASSISTANT_SLUG__, array( $this, 'ajax' ) );
 
@@ -32,12 +33,35 @@ class JftAssistant_Admin {
 	}
 
 	/**
+	 * Redirect the plugin on first-time activation to the themes page.
+	 */
+	function admin_init() {
+		global $pagenow;
+		if ( isset( $_GET['activate'] ) && 'plugins.php' === $pagenow ) {
+			$time   = get_option( JFT_ASSISTANT_SLUG__ . 'activation', false );
+			if ( false === $time ) {
+				update_option( JFT_ASSISTANT_SLUG__ . 'activation', time() );
+				wp_safe_redirect(
+					add_query_arg(
+						array(
+							'browse' => 'jft',
+							'pg'     => 'jft',
+						), admin_url( '/theme-install.php' )
+					)
+				);
+				exit;
+			}
+		}
+	}
+
+	/**
 	 * Load themes for a specific page.
 	 *
 	 * @param int $page Page number.
 	 */
 	function load_themes( $page = 1 ) {
-		$this->get_themes( (object) array( 'page' => $page ) );
+		$args   = array( 'page' => $page );
+		$this->get_themes( (object) $args );
 	}
 
 	/**
@@ -56,10 +80,16 @@ class JftAssistant_Admin {
 		if ( isset( $args->search ) && ! empty( $args->search ) ) {
 			$key .= $args->search;
 		}
+		if ( isset( $args->sticky ) && ! empty( $args->sticky ) ) {
+			$key .= 'sticky';
+		}
 		$response = get_transient( $key );
 		$endpoint = str_replace( '#', $page, JFT_ASSISTANT_THEMES_ENDPOINT__ );
 		if ( isset( $args->search ) && ! empty( $args->search ) ) {
 			$endpoint = add_query_arg( 'search', $args->search, $endpoint );
+		}
+		if ( isset( $args->sticky ) && ! empty( $args->sticky ) ) {
+			$endpoint = add_query_arg( 'sticky', $args->sticky, $endpoint );
 		}
 
 		if ( false === $response ) {
@@ -250,13 +280,24 @@ class JftAssistant_Admin {
 	 */
 	function themes_api_result( $res, $action, $args ) {
 		if ( 'query_themes' === $action && ( $this->is_tab_jft( $args ) || $this->is_search_jft() ) ) {
-			$response1 = $this->get_themes( $args, true );
+			$responses      = array();
+
+			// let's get the sticky themes first if this is the first page of the JFT page.
+			if ( $this->is_tab_jft( $args ) ) {
+				$page = isset( $args->page ) ? $args->page : 1;
+				if ( 1 === $page ) {
+					$responses[]    = $this->get_themes( (object) array( 'sticky' => true ), true );
+				}
+			}
+
+			$responses[]    = $this->get_themes( $args, true );
+
 			// get the next page preemptively.
-			$args->page = isset( $args->page ) ? $args->page + 1 : 2;
-			$response2  = $this->get_themes( $args, true );
+			$args->page  = isset( $args->page ) ? $args->page + 1 : 2;
+			$responses[] = $this->get_themes( $args, true );
 
 			// send the consolidated response.
-			return $this->append_response( array( $response1, $response2 ) );
+			return $this->append_response( $responses );
 		}
 
 		if ( 'theme_information' === $action ) {
