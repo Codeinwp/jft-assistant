@@ -8,7 +8,7 @@ class JftAssistant_Admin {
 	/**
 	 * This is the name of the theme that will sent for us to look at the cookie and determine if this was a chosen theme from justfreethemes.com.
 	 */
-	const JFT_CHOSEN_THEME	= 'jft-chosen';
+	const JFT_CHOSEN_THEME  = 'jft-chosen';
 
 	/**
 	 * The constructor that determines the class to load
@@ -292,9 +292,9 @@ class JftAssistant_Admin {
 		$jft_page = isset( $_GET['pg'] ) && 'jft' === $_GET['pg'];
 
 		// check if a pre-selected theme needs to be installed and if it does, generate the link that will be used.
-		$theme		= array();
+		$theme      = array();
 		if ( isset( $_GET['theme'] ) && 'yes' === $_GET['theme'] && isset( $_COOKIE[ JFT_ASSISTANT_SLUG__ . 'theme' ] ) ) {
-			$theme	= json_decode( stripslashes( $_COOKIE[ JFT_ASSISTANT_SLUG__ . 'theme' ] ), true );
+			$theme  = json_decode( stripslashes( $_COOKIE[ JFT_ASSISTANT_SLUG__ . 'theme' ] ), true );
 			$theme['link'] = add_query_arg( array( 'action' => 'install-theme', 'theme' => self::JFT_CHOSEN_THEME, '_wpnonce' => wp_create_nonce( 'install-theme_' . self::JFT_CHOSEN_THEME ) ), admin_url( '/update.php' ) );
 			$theme['message'] = sprintf( __( 'Do you want to install "%s"?', 'jft-assistant' ), $theme['name'] );
 		}
@@ -309,7 +309,7 @@ class JftAssistant_Admin {
 					'nonce'  => wp_create_nonce( JFT_ASSISTANT_SLUG__ ),
 					'action' => JFT_ASSISTANT_SLUG__,
 				),
-				'theme'		=> $theme,
+				'theme'     => $theme,
 			)
 		);
 
@@ -440,7 +440,7 @@ class JftAssistant_Admin {
 		if ( ! array_key_exists( 'theme', $json ) ) {
 			return false;
 		}
-		
+
 		// set the cookie for 1 minute.
 		setcookie( JFT_ASSISTANT_SLUG__ . 'theme', json_encode( $json['theme'] ), time() + 60000, '/' );
 		return true;
@@ -467,10 +467,10 @@ class JftAssistant_Admin {
 	 * Get the information of a single theme (from the API not from the database as we don't know on which page this theme might be available).
 	 */
 	private function get_single_theme_information( $id ) {
-		$endpoint	= str_replace( '#', 1, JFT_ASSISTANT_THEMES_ENDPOINT__ );
-		$endpoint	= add_query_arg( 'include', $id, $endpoint );
-		$response	= $this->call_api( $endpoint );
-		$theme		= $this->parse_response( $response, (object) array(), true );
+		$endpoint   = str_replace( '#', 1, JFT_ASSISTANT_THEMES_ENDPOINT__ );
+		$endpoint   = add_query_arg( 'include', $id, $endpoint );
+		$response   = $this->call_api( $endpoint );
+		$theme      = $this->parse_response( $response, (object) array(), true );
 		return $theme->themes[0];
 	}
 

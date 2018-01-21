@@ -2,8 +2,6 @@
 /* global jft */
 (function($, jft){
 
-    console.log(jft.theme.link);
-
     $(document).ready(function(){
         initAll();
     });
@@ -52,7 +50,7 @@
         });
 
         if(jft.theme != null && jft.theme.link != null) {
-            if(confirm(jft.theme.message)){
+            if(window.confirm(jft.theme.message)){
                 window.location.href = jft.theme.link;
             }else{
                 $.ajax({
