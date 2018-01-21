@@ -44,6 +44,7 @@ define( 'JFT_ASSISTANT_THEMES_ENDPOINT__', 'https://justfreethemes.com/wp-json/w
 define( 'JFT_ASSISTANT_THEMES_CACHE_DAYS__', 1 );
 define( 'JFT_ASSISTANT_THEMES_DISABLE_CACHE__', false );
 define( 'JFT_THEO_TRACK_ENDPOINT__', 'https://justfreethemes.com/wp-json/theo/v1/track/2/#id#/' );
+define( 'JFT_THEME_COOKIE_ENDPOINT__', 'https://justfreethemes.com/wp-json/jft/v1/jft-theme/' );
 
 if ( JFT_ASSISTANT_DEBUG__ ) {
 	// @codingStandardsIgnoreStart
