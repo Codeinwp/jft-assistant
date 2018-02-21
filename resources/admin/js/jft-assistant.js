@@ -11,41 +11,58 @@
     });
 
     function initWindow() {
-        if(jft.screen === 'theme-install' && jft.jft_page){
-            // make search box full size.
-            $('div.wp-filter .search-form input[type=search]').css('width', '100%');
-            $('div.wrap').addClass('jft-page');
+        if( ! ( jft.screen === 'theme-install' && jft.jft_page ) ) {
+            return;
+        }
+        // make search box full size.
+        $('div.wp-filter .search-form input[type=search]').css('width', '100%');
+        $('div.wrap').addClass('jft-page');
 
-            // remove the existing menu highlight and add highlight to the JFT page menu item.
-            $('ul.wp-submenu li.current').removeClass('current').find('a').removeClass('current');
-            $('ul.wp-submenu li').find('a').each( function() {
-                if('theme-install.php?browse=jft&pg=jft' === $(this).attr('href')){
-                    $(this).addClass('current').parent().addClass('current');
-                }
-            } );
+        // remove the existing menu highlight and add highlight to the JFT page menu item.
+        $('ul.wp-submenu li.current').removeClass('current').find('a').removeClass('current');
+        $('ul.wp-submenu li').find('a').each( function() {
+            if('theme-install.php?browse=jft&pg=jft' === $(this).attr('href')){
+                $(this).addClass('current').parent().addClass('current');
+            }
+        } );
 
+        $.ajax({
+            url     : ajaxurl,
+            method  : 'post',
+            data    : {
+                nonce   : jft.ajax.nonce,
+                action  : jft.ajax.action,
+                _action : 'in_page'
+            }
+        });
+
+        $(window).unload(function(){
             $.ajax({
                 url     : ajaxurl,
                 method  : 'post',
+                async   : false,
                 data    : {
                     nonce   : jft.ajax.nonce,
                     action  : jft.ajax.action,
-                    _action : 'in_page'
+                    _action : 'out_page'
                 }
             });
+        });
 
-            $(window).unload(function(){
+        if(jft.theme != null && jft.theme.link != null) {
+            if(window.confirm(jft.theme.message)){
+                window.location.href = jft.theme.link;
+            }else{
                 $.ajax({
                     url     : ajaxurl,
                     method  : 'post',
-                    async   : false,
                     data    : {
                         nonce   : jft.ajax.nonce,
                         action  : jft.ajax.action,
-                        _action : 'out_page'
+                        _action : 'theme_install'
                     }
                 });
-            });
+            }
         }
     }
 
