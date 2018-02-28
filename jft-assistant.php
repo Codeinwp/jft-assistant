@@ -40,11 +40,12 @@ define( 'JFT_ASSISTANT_RESOURCES__', JFT_ASSISTANT_ROOT__ . 'resources/' );
 define( 'JFT_ASSISTANT_IMAGES__', JFT_ASSISTANT_RESOURCES__ . 'images/' );
 define( 'JFT_ASSISTANT_DEBUG__', false );
 define( 'JFT_ASSISTANT_THEMES_PERPAGE__', 48 );
-define( 'JFT_ASSISTANT_THEMES_ENDPOINT__', 'https://justfreethemes.com/wp-json/wp/v2/posts?context=jft-assistant&per_page=' . JFT_ASSISTANT_THEMES_PERPAGE__ . '&page=#' );
+define( 'JFT_ASSISTANT_ENDPOINT', 'https://justfreethemes.com/wp-json/' );
+define( 'JFT_ASSISTANT_THEMES_ENDPOINT__', JFT_ASSISTANT_ENDPOINT . 'wp/v2/posts?context=jft-assistant&per_page=' . JFT_ASSISTANT_THEMES_PERPAGE__ . '&page=#' );
+define( 'JFT_THEO_TRACK_ENDPOINT__', JFT_ASSISTANT_ENDPOINT . 'theo/v1/track/2/#id#/' );
+define( 'JFT_THEME_COOKIE_ENDPOINT__', JFT_ASSISTANT_ENDPOINT . 'jft/v1/jft-theme/' );
 define( 'JFT_ASSISTANT_THEMES_CACHE_DAYS__', 1 );
 define( 'JFT_ASSISTANT_THEMES_DISABLE_CACHE__', false );
-define( 'JFT_THEO_TRACK_ENDPOINT__', 'https://justfreethemes.com/wp-json/theo/v1/track/2/#id#/' );
-define( 'JFT_THEME_COOKIE_ENDPOINT__', 'https://justfreethemes.com/wp-json/jft/v1/jft-theme/' );
 
 if ( JFT_ASSISTANT_DEBUG__ ) {
 	// @codingStandardsIgnoreStart
