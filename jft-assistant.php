@@ -4,7 +4,7 @@
  * Contributors: codeinwp,themeisle, rozroz
  * Plugin URI: https://github.com/Codeinwp/jft-assistant
  * Description: Allows access to more than 600 awesome, pixel perfect & free WordPress Themes
- * Version: 1.0.1
+ * Version: 1.0.2
  * Author: JustFreeThemes
  * Author URI: https://justfreethemes.com
  * License: GPL2
@@ -32,7 +32,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 define( 'JFT_ASSISTANT_NAME__', 'JFT Assistant' );
 define( 'JFT_ASSISTANT_SLUG__', '__jft_assistant_' );
-define( 'JFT_ASSISTANT_VERSION__', '1.0.1' );
+define( 'JFT_ASSISTANT_VERSION__', '1.0.2' );
 define( 'JFT_ASSISTANT_DIR__', trailingslashit( plugin_dir_path( __FILE__ ) ) );
 define( 'JFT_ASSISTANT_URL__', plugin_dir_url( __FILE__ ) );
 define( 'JFT_ASSISTANT_ROOT__', trailingslashit( plugins_url( '', __FILE__ ) ) );
@@ -40,7 +40,7 @@ define( 'JFT_ASSISTANT_RESOURCES__', JFT_ASSISTANT_ROOT__ . 'resources/' );
 define( 'JFT_ASSISTANT_IMAGES__', JFT_ASSISTANT_RESOURCES__ . 'images/' );
 define( 'JFT_ASSISTANT_DEBUG__', false );
 define( 'JFT_ASSISTANT_THEMES_PERPAGE__', 48 );
-define( 'JFT_ASSISTANT_ENDPOINT', 'https://justfreethemes.com/wp-json/' );
+define( 'JFT_ASSISTANT_ENDPOINT', 'http://justfreethemes.local/wp-json/' );
 define( 'JFT_ASSISTANT_THEMES_ENDPOINT__', JFT_ASSISTANT_ENDPOINT . 'wp/v2/posts?context=jft-assistant&per_page=' . JFT_ASSISTANT_THEMES_PERPAGE__ . '&page=#' );
 define( 'JFT_THEO_TRACK_ENDPOINT__', JFT_ASSISTANT_ENDPOINT . 'theo/v1/track/2/#id#/' );
 define( 'JFT_THEME_COOKIE_ENDPOINT__', JFT_ASSISTANT_ENDPOINT . 'jft/v1/jft-theme/' );

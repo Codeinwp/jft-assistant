@@ -101,7 +101,7 @@ class JftAssistant_Admin {
 		}
 
 		if ( false === $response ) {
-			$response = $this->call_api( $response );
+			$response = $this->call_api( $endpoint );
 
 			if ( ! $response || is_wp_error( $response ) || $response['response']['code'] != 200 ) {
 				return null;
