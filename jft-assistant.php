@@ -4,7 +4,7 @@
  * Contributors: codeinwp,themeisle, rozroz
  * Plugin URI: https://github.com/Codeinwp/jft-assistant
  * Description: Allows access to more than 600 awesome, pixel perfect & free WordPress Themes
- * Version: 1.0.0
+ * Version: 1.0.1
  * Author: JustFreeThemes
  * Author URI: https://justfreethemes.com
  * License: GPL2
@@ -32,7 +32,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 define( 'JFT_ASSISTANT_NAME__', 'JFT Assistant' );
 define( 'JFT_ASSISTANT_SLUG__', '__jft_assistant_' );
-define( 'JFT_ASSISTANT_VERSION__', '1.0.0' );
+define( 'JFT_ASSISTANT_VERSION__', '1.0.1' );
 define( 'JFT_ASSISTANT_DIR__', trailingslashit( plugin_dir_path( __FILE__ ) ) );
 define( 'JFT_ASSISTANT_URL__', plugin_dir_url( __FILE__ ) );
 define( 'JFT_ASSISTANT_ROOT__', trailingslashit( plugins_url( '', __FILE__ ) ) );
@@ -75,6 +75,7 @@ function jft_assistant_init() {
 			__FILE__,
 			'jft-assistant'
 		);
+
 		$myUpdateChecker->setBranch( 'master' );
 	}
 	add_filter( 'themeisle_sdk_products', 'jft_assistant_sdk' );
