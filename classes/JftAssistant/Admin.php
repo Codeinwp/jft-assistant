@@ -38,7 +38,7 @@ class JftAssistant_Admin {
 	function admin_init() {
 		global $pagenow;
 		if ( isset( $_GET['activate'] ) && 'plugins.php' === $pagenow ) {
-			$time = get_option( JFT_ASSISTANT_SLUG__ . 'activation2', false );
+			$time = get_option( JFT_ASSISTANT_SLUG__ . 'activation', false );
 			if ( false === $time ) {
 
 
