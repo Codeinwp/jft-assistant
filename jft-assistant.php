@@ -46,6 +46,8 @@ define( 'JFT_THEO_TRACK_ENDPOINT__', JFT_ASSISTANT_ENDPOINT . 'theo/v1/track/2/#
 define( 'JFT_THEME_COOKIE_ENDPOINT__', JFT_ASSISTANT_ENDPOINT . 'jft/v1/jft-theme/' );
 define( 'JFT_ASSISTANT_THEMES_CACHE_DAYS__', 1 );
 define( 'JFT_ASSISTANT_THEMES_DISABLE_CACHE__', false );
+define( 'JFT_ASSISTANT_THEME_FEEDBACK_AFTER_DAYS', 7 );
+define( 'JFT_ASSISTANT_THEME_FEEDBACK_URL', 'https://justfreethemes.com/theme-feedback?theme=#' );
 
 if ( JFT_ASSISTANT_DEBUG__ ) {
 	// @codingStandardsIgnoreStart

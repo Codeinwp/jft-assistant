@@ -24,8 +24,10 @@ class JftAssistant_Admin {
 		add_action( 'upgrader_process_complete', array( $this, 'post_theme_install' ), 10, 2 );
 		add_action( 'admin_menu', array( $this, 'admin_menu' ) );
 		add_action( 'admin_init', array( $this, 'admin_init' ) );
+		add_action( 'admin_notices', array( $this, 'theme_feedback_notices' ) );
 		add_action( 'jft_assistant_load_themes', array( $this, 'load_themes' ), 10, 1 );
 		add_action( 'wp_ajax_' . JFT_ASSISTANT_SLUG__, array( $this, 'ajax' ) );
+		add_action( 'after_switch_theme', array( $this, 'after_switch_theme' ) );
 
 		add_filter( 'themes_api', array( $this, 'themes_api' ), 10, 3 );
 		add_filter( 'themes_api_result', array( $this, 'themes_api_result' ), 10, 3 );
@@ -33,14 +35,94 @@ class JftAssistant_Admin {
 	}
 
 	/**
+	 * Capture when the theme was activated.
+	 */
+	function after_switch_theme() {
+		$theme          = wp_get_theme();
+		$theme_history  = get_option( JFT_ASSISTANT_SLUG__ . 'theme-history', array() );
+		if ( ! array_key_exists( $theme->get( 'Name' ), $theme_history ) ) {
+			$theme_history[ $theme->get( 'Name' ) ] = time();
+			update_option( JFT_ASSISTANT_SLUG__ . 'theme-history', $theme_history );
+		}
+	}
+
+	/**
+	 * Show the notices, if required.
+	 */
+	function theme_feedback_notices() {
+		// check if it's time to show the notice, or it has already been shown.
+		$dont_show  = get_option( JFT_ASSISTANT_SLUG__ . 'theme-feedback-notice' );
+		if ( ! empty( $dont_show ) ) {
+			return;
+		}
+
+		// check if this theme is even in JFT.
+		$theme  = wp_get_theme();
+		$theme_history  = get_option( JFT_ASSISTANT_SLUG__ . 'theme-history', array() );
+		if ( ! array_key_exists( $theme->get( 'Name' ), $theme_history ) ) {
+			return;
+		}
+		$time       = $theme_history[ $theme->get( 'Name' ) ];
+		if ( ( time() - $time ) / DAY_IN_SECONDS < JFT_ASSISTANT_THEME_FEEDBACK_AFTER_DAYS ) {
+			return;
+		}
+
+		$theme_info = $this->get_single_theme_information( $theme->get( 'Name' ), false );
+		if ( empty( $theme_info ) ) {
+			return;
+		}
+
+		$url    = str_replace( '#', $theme->get( 'Name' ), JFT_ASSISTANT_THEME_FEEDBACK_URL );
+		echo '
+			<script type="text/javascript" id="jft-theme-feedback-js">
+				(function ($) {
+					$(document).ready(function () {
+						$("#jft-theme-feedback").on("click", ".jft-theme-feedback-dismiss", function (e) {
+							$.ajax({
+								url: ajaxurl,
+								method: "post",
+								data: {
+									"nonce": "' . wp_create_nonce( JFT_ASSISTANT_SLUG__ ) . '",
+									"action": "' . JFT_ASSISTANT_SLUG__ . '",
+									"_action": "theme-feedback"
+								},
+								success: function () {
+									$("#jft-theme-feedback").hide();
+								}
+							});
+						});
+					});
+				})(jQuery);
+			</script>
+
+			<div class="notice notice-success is-dismissible" id="jft-theme-feedback" >
+				<div class="jft-theme-feedback-box">
+					<div id="jft-theme-feedback-notification">
+						<p>' . __( 'Some heading', 'jft-assistant' ) . '</p>
+						<p>' . __( 'Some msg', 'jft-assistant' ) . '</p>
+						<div class="actions">
+							<a href="' . $url . '" target="_blank" class="button button-primary jft-theme-feedback-dismiss"> ' . __( 'Start Rating', 'jft-assistant' ) . '</a>'
+							. get_submit_button( __( 'Noo', 'jft-assistant' ), 'jft-theme-feedback-dismiss', 'jft-theme-feedback-dismiss', false ) .
+				'</div></div>
+			</div></div>';
+
+	}
+
+	/**
 	 * Redirect the plugin on first-time activation to the themes page.
 	 */
 	function admin_init() {
 		global $pagenow;
+
+		// If theme history is empty, populate it.
+		$theme_history  = get_option( JFT_ASSISTANT_SLUG__ . 'theme-history', array() );
+		if ( empty( $theme_history ) ) {
+			$this->after_switch_theme();
+		}
+
 		if ( isset( $_GET['activate'] ) && 'plugins.php' === $pagenow ) {
 			$time = get_option( JFT_ASSISTANT_SLUG__ . 'activation', false );
 			if ( false === $time ) {
-
 
 				$args = array(
 					'browse' => 'jft',
@@ -405,7 +487,6 @@ class JftAssistant_Admin {
 
 		if ( 'theme_information' === $action ) {
 
-
 			$response = $this->get_themes( $args, false );
 			if ( isset( $args->slug ) && array_key_exists( $args->slug, $response['themes'] ) ) {
 				return true;
@@ -489,13 +570,18 @@ class JftAssistant_Admin {
 					break;
 				}
 				$theme            = array();
-				$theme['link']    = add_query_arg( array(
-					'action'   => 'install-theme',
-					'theme'    => $theme_info->slug,
-					'_wpnonce' => wp_create_nonce( 'install-theme_' . $theme_info->slug )
-				), admin_url( '/update.php' ) );
+				$theme['link']    = add_query_arg(
+					array(
+						'action'   => 'install-theme',
+						'theme'    => $theme_info->slug,
+						'_wpnonce' => wp_create_nonce( 'install-theme_' . $theme_info->slug ),
+					), admin_url( '/update.php' )
+				);
 				$theme['message'] = sprintf( __( 'Do you want to install %s?', 'jft-assistant' ), esc_attr( $theme_info->name ) );
 				wp_send_json( $theme );
+				break;
+			case 'theme-feedback':
+				update_option( JFT_ASSISTANT_SLUG__ . 'theme-feedback-notice', 'yes' );
 				break;
 		}
 
@@ -505,12 +591,21 @@ class JftAssistant_Admin {
 	/**
 	 * Get the information of a single theme (from the API not from the database as we don't know on which page this theme might be available).
 	 */
-	private function get_single_theme_information( $id ) {
+	private function get_single_theme_information( $id_or_name, $by_id = true ) {
 		$endpoint = str_replace( '#', 1, JFT_ASSISTANT_THEMES_ENDPOINT__ );
-		$endpoint = add_query_arg( 'include', $id, $endpoint );
+		if ( $by_id ) {
+			$endpoint = add_query_arg( 'include', $id_or_name, $endpoint );
+		} else {
+			// by name.
+			$endpoint = add_query_arg( 'name', $id_or_name, $endpoint );
+		}
 		$response = $this->call_api( $endpoint );
-		$theme    = $this->parse_response( $response, (object) array(), true );
-
-		return $theme->themes[0];
+		if ( ! empty( $response ) ) {
+			$theme    = $this->parse_response( $response, (object) array(), true );
+			if ( $theme && property_exists( $theme, 'themes' ) ) {
+				return $theme->themes[0];
+			}
+		}
+		return null;
 	}
 }
