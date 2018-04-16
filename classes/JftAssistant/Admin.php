@@ -6,6 +6,27 @@
 class JftAssistant_Admin {
 
 	/**
+	 * The key that stores the theme activation values.
+	 *
+	 * @var string
+	 */
+	private static $theme_activation_key    = JFT_ASSISTANT_SLUG__ . 'theme-activation';
+
+	/**
+	 * The key that stores the theme feedback flag.
+	 *
+	 * @var string
+	 */
+	private static $theme_feedback_key      = JFT_ASSISTANT_SLUG__ . 'theme-feedback-notice';
+
+	/**
+	 * The key that stores the plugin activation timestamp.
+	 *
+	 * @var string
+	 */
+	private static $plugin_activation_key   = JFT_ASSISTANT_SLUG__ . 'activation';
+
+	/**
 	 * The constructor that determines the class to load
 	 */
 	public function __construct() {
@@ -38,11 +59,11 @@ class JftAssistant_Admin {
 	 * Capture when the theme was activated.
 	 */
 	function after_switch_theme() {
-		$theme          = wp_get_theme();
-		$theme_history  = get_option( JFT_ASSISTANT_SLUG__ . 'theme-history', array() );
-		if ( ! array_key_exists( $theme->get( 'Name' ), $theme_history ) ) {
-			$theme_history[ $theme->get( 'Name' ) ] = time();
-			update_option( JFT_ASSISTANT_SLUG__ . 'theme-history', $theme_history );
+		$name   = get_option( self::$theme_activation_key . 'name' );
+		$theme  = wp_get_theme();
+		if ( $name !== $theme->get( 'Name' ) ) {
+			update_option( self::$theme_activation_key, time() );
+			update_option( self::$theme_activation_key . 'name', $theme->get( 'Name' ) );
 		}
 	}
 
@@ -51,28 +72,24 @@ class JftAssistant_Admin {
 	 */
 	function theme_feedback_notices() {
 		// check if it's time to show the notice, or it has already been shown.
-		$dont_show  = get_option( JFT_ASSISTANT_SLUG__ . 'theme-feedback-notice' );
+		$dont_show  = get_option( self::$theme_feedback_key );
 		if ( ! empty( $dont_show ) ) {
 			return;
 		}
 
-		// check if this theme is even in JFT.
 		$theme  = wp_get_theme();
-		$theme_history  = get_option( JFT_ASSISTANT_SLUG__ . 'theme-history', array() );
-		if ( ! array_key_exists( $theme->get( 'Name' ), $theme_history ) ) {
-			return;
-		}
-		$time       = $theme_history[ $theme->get( 'Name' ) ];
+		$time   = get_option( self::$theme_activation_key, array() );
 		if ( ( time() - $time ) / DAY_IN_SECONDS < JFT_ASSISTANT_THEME_FEEDBACK_AFTER_DAYS ) {
 			return;
 		}
 
+		// check if this theme is even in JFT.
 		$theme_info = $this->get_single_theme_information( $theme->get( 'Name' ), false );
 		if ( empty( $theme_info ) ) {
 			return;
 		}
 
-		$url    = str_replace( '#', $theme->get( 'Name' ), JFT_ASSISTANT_THEME_FEEDBACK_URL );
+		$url    = add_query_arg( 'theme', $theme->get( 'Name' ), JFT_ASSISTANT_THEME_FEEDBACK_URL );
 		echo '
 			<script type="text/javascript" id="jft-theme-feedback-js">
 				(function ($) {
@@ -115,13 +132,13 @@ class JftAssistant_Admin {
 		global $pagenow;
 
 		// If theme history is empty, populate it.
-		$theme_history  = get_option( JFT_ASSISTANT_SLUG__ . 'theme-history', array() );
+		$theme_history  = get_option( self::$theme_activation_key, array() );
 		if ( empty( $theme_history ) ) {
 			$this->after_switch_theme();
 		}
 
 		if ( isset( $_GET['activate'] ) && 'plugins.php' === $pagenow ) {
-			$time = get_option( JFT_ASSISTANT_SLUG__ . 'activation', false );
+			$time = get_option( self::$plugin_activation_key, false );
 			if ( false === $time ) {
 
 				$args = array(
@@ -129,7 +146,7 @@ class JftAssistant_Admin {
 					'pg'     => 'jft',
 				);
 
-				update_option( JFT_ASSISTANT_SLUG__ . 'activation', time() );
+				update_option( self::$plugin_activation_key, time() );
 				wp_safe_redirect( add_query_arg( $args, admin_url( '/theme-install.php' ) ) );
 				exit;
 			}
@@ -166,7 +183,7 @@ class JftAssistant_Admin {
 			$key .= 'sticky';
 		}
 		$response = get_transient( $key );
-		$endpoint = str_replace( '#', $page, JFT_ASSISTANT_THEMES_ENDPOINT__ );
+		$endpoint = str_replace( 'page', $page, JFT_ASSISTANT_THEMES_ENDPOINT__ );
 		if ( isset( $args->search ) && ! empty( $args->search ) ) {
 			$endpoint = add_query_arg( 'search', $args->search, $endpoint );
 		}
@@ -581,7 +598,7 @@ class JftAssistant_Admin {
 				wp_send_json( $theme );
 				break;
 			case 'theme-feedback':
-				update_option( JFT_ASSISTANT_SLUG__ . 'theme-feedback-notice', 'yes' );
+				update_option( self::$theme_feedback_key, 'yes' );
 				break;
 		}
 
@@ -592,7 +609,7 @@ class JftAssistant_Admin {
 	 * Get the information of a single theme (from the API not from the database as we don't know on which page this theme might be available).
 	 */
 	private function get_single_theme_information( $id_or_name, $by_id = true ) {
-		$endpoint = str_replace( '#', 1, JFT_ASSISTANT_THEMES_ENDPOINT__ );
+		$endpoint = str_replace( 'page', 1, JFT_ASSISTANT_THEMES_ENDPOINT__ );
 		if ( $by_id ) {
 			$endpoint = add_query_arg( 'include', $id_or_name, $endpoint );
 		} else {
