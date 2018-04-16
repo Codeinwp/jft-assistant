@@ -10,21 +10,21 @@ class JftAssistant_Admin {
 	 *
 	 * @var string
 	 */
-	private static $theme_activation_key    = JFT_ASSISTANT_SLUG__ . 'theme-activation';
+	private static $theme_activation_key    = 'theme-activation';
 
 	/**
 	 * The key that stores the theme feedback flag.
 	 *
 	 * @var string
 	 */
-	private static $theme_feedback_key      = JFT_ASSISTANT_SLUG__ . 'theme-feedback-notice';
+	private static $theme_feedback_key      = 'theme-feedback-notice';
 
 	/**
 	 * The key that stores the plugin activation timestamp.
 	 *
 	 * @var string
 	 */
-	private static $plugin_activation_key   = JFT_ASSISTANT_SLUG__ . 'activation';
+	private static $plugin_activation_key   = 'activation';
 
 	/**
 	 * The constructor that determines the class to load
@@ -59,11 +59,12 @@ class JftAssistant_Admin {
 	 * Capture when the theme was activated.
 	 */
 	function after_switch_theme() {
-		$name   = get_option( self::$theme_activation_key . 'name' );
+		$name_key = self::$theme_activation_key . 'name';
+		$name   = get_option( JFT_ASSISTANT_SLUG__ . $name_key );
 		$theme  = wp_get_theme();
 		if ( $name !== $theme->get( 'Name' ) ) {
-			update_option( self::$theme_activation_key, time() );
-			update_option( self::$theme_activation_key . 'name', $theme->get( 'Name' ) );
+			update_option( JFT_ASSISTANT_SLUG__ . self::$theme_activation_key, time() );
+			update_option( JFT_ASSISTANT_SLUG__ . $name_key, $theme->get( 'Name' ) );
 		}
 	}
 
@@ -72,13 +73,13 @@ class JftAssistant_Admin {
 	 */
 	function theme_feedback_notices() {
 		// check if it's time to show the notice, or it has already been shown.
-		$dont_show  = get_option( self::$theme_feedback_key );
+		$dont_show  = get_option( JFT_ASSISTANT_SLUG__ . self::$theme_feedback_key );
 		if ( ! empty( $dont_show ) ) {
 			return;
 		}
 
 		$theme  = wp_get_theme();
-		$time   = get_option( self::$theme_activation_key, array() );
+		$time   = get_option( JFT_ASSISTANT_SLUG__ . self::$theme_activation_key, array() );
 		if ( ( time() - $time ) / DAY_IN_SECONDS < JFT_ASSISTANT_THEME_FEEDBACK_AFTER_DAYS ) {
 			return;
 		}
@@ -132,13 +133,13 @@ class JftAssistant_Admin {
 		global $pagenow;
 
 		// If theme history is empty, populate it.
-		$theme_history  = get_option( self::$theme_activation_key, array() );
+		$theme_history  = get_option( JFT_ASSISTANT_SLUG__ . self::$theme_activation_key, array() );
 		if ( empty( $theme_history ) ) {
 			$this->after_switch_theme();
 		}
 
 		if ( isset( $_GET['activate'] ) && 'plugins.php' === $pagenow ) {
-			$time = get_option( self::$plugin_activation_key, false );
+			$time = get_option( JFT_ASSISTANT_SLUG__ . self::$plugin_activation_key, false );
 			if ( false === $time ) {
 
 				$args = array(
@@ -146,7 +147,7 @@ class JftAssistant_Admin {
 					'pg'     => 'jft',
 				);
 
-				update_option( self::$plugin_activation_key, time() );
+				update_option( JFT_ASSISTANT_SLUG__ . self::$plugin_activation_key, time() );
 				wp_safe_redirect( add_query_arg( $args, admin_url( '/theme-install.php' ) ) );
 				exit;
 			}
@@ -598,7 +599,7 @@ class JftAssistant_Admin {
 				wp_send_json( $theme );
 				break;
 			case 'theme-feedback':
-				update_option( self::$theme_feedback_key, 'yes' );
+				update_option( JFT_ASSISTANT_SLUG__ . self::$theme_feedback_key, 'yes' );
 				break;
 		}
 
