@@ -41,7 +41,6 @@ class JftAssistant_Admin {
 			$time = get_option( JFT_ASSISTANT_SLUG__ . 'activation', false );
 			if ( false === $time ) {
 
-
 				$args = array(
 					'browse' => 'jft',
 					'pg'     => 'jft',
@@ -405,7 +404,6 @@ class JftAssistant_Admin {
 
 		if ( 'theme_information' === $action ) {
 
-
 			$response = $this->get_themes( $args, false );
 			if ( isset( $args->slug ) && array_key_exists( $args->slug, $response['themes'] ) ) {
 				return true;
@@ -443,8 +441,8 @@ class JftAssistant_Admin {
 					'action' => JFT_ASSISTANT_SLUG__,
 				),
 				'theme'    => $theme,
-				'additional'	=> array(
-					'prompt_orbit_fox'	=> is_plugin_active( 'themeisle-companion/themeisle-companion.php' ) ? '' : __( 'Do you want to install the OrbitFox plugin as well for free uptime monitoring, sharing icons and google analytics integration?', 'jft-assistant' ),
+				'additional'    => array(
+					'prompt_orbit_fox'  => is_plugin_active( 'themeisle-companion/themeisle-companion.php' ) ? '' : __( 'Do you want to install the OrbitFox plugin as well for free uptime monitoring, sharing icons and google analytics integration?', 'jft-assistant' ),
 					'orbit_fox_installer' => admin_url( sprintf( 'update.php?action=install-plugin&plugin=themeisle-companion&_wpnonce=%s', wp_create_nonce( 'install-plugin_' . 'themeisle-companion' ) ) ),
 				),
 			)
@@ -493,11 +491,13 @@ class JftAssistant_Admin {
 					break;
 				}
 				$theme            = array();
-				$theme['link']    = add_query_arg( array(
-					'action'   => 'install-theme',
-					'theme'    => $theme_info->slug,
-					'_wpnonce' => wp_create_nonce( 'install-theme_' . $theme_info->slug )
-				), admin_url( '/update.php' ) );
+				$theme['link']    = add_query_arg(
+					array(
+						'action'   => 'install-theme',
+						'theme'    => $theme_info->slug,
+						'_wpnonce' => wp_create_nonce( 'install-theme_' . $theme_info->slug ),
+					), admin_url( '/update.php' )
+				);
 				$theme['message'] = sprintf( __( 'Do you want to install %s?', 'jft-assistant' ), esc_attr( $theme_info->name ) );
 				wp_send_json( $theme );
 				break;

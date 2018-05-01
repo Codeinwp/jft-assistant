@@ -1,5 +1,6 @@
 /* global ajaxurl */
 /* global jft */
+/* global confirm */
 (function ($, jft) {
 
 	$(document).ready(function () {
@@ -98,7 +99,7 @@
      * Instead of using backhone, we will create a DOM observer on the clicked theme box.
      */
     function orbitFoxPluginHandler(){
-        $(document).on('click', 'a.theme-install', function(e){
+        $(document).on('click', 'a.theme-install', function(){
             if('' !== jft.additional.prompt_orbit_fox && confirm(jft.additional.prompt_orbit_fox)){
                 var done = false;
                 var mutateObserver = new MutationObserver(function(records) {
