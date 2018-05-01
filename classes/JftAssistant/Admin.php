@@ -443,6 +443,10 @@ class JftAssistant_Admin {
 					'action' => JFT_ASSISTANT_SLUG__,
 				),
 				'theme'    => $theme,
+				'additional'	=> array(
+					'prompt_orbit_fox'	=> is_plugin_active( 'themeisle-companion/themeisle-companion.php' ) ? '' : __( 'Do you want to install the OrbitFox plugin as well for free uptime monitoring, sharing icons and google analytics integration?', 'jft-assistant' ),
+					'orbit_fox_installer' => admin_url( sprintf( 'update.php?action=install-plugin&plugin=themeisle-companion&_wpnonce=%s', wp_create_nonce( 'install-plugin_' . 'themeisle-companion' ) ) ),
+				),
 			)
 		);
 

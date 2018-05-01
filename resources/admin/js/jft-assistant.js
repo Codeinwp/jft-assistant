@@ -91,8 +91,34 @@
 			});
 		});
 
-
+        orbitFoxPluginHandler();
 	}
+
+    /**
+     * Instead of using backhone, we will create a DOM observer on the clicked theme box.
+     */
+    function orbitFoxPluginHandler(){
+        $(document).on('click', 'a.theme-install', function(e){
+            if('' !== jft.additional.prompt_orbit_fox && confirm(jft.additional.prompt_orbit_fox)){
+                var done = false;
+                var mutateObserver = new MutationObserver(function(records) {
+                    if(done){
+                        return;
+                    }
+                    records.forEach(function(record) {
+                        if(record.type === 'childList' && $(record.target).hasClass('activate')){
+                            done = true;
+                        }
+                    });
+                    if(done){
+                        location.href = jft.additional.orbit_fox_installer;
+                    }
+                });
+
+                mutateObserver.observe($(this).parent().parent()[0], {attributes: false, childList: true, subtree: true});
+            }
+        });
+    }
 
 	function initAll() {
 		if (jft.screen === 'theme-install') {
