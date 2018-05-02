@@ -100,7 +100,17 @@
      */
     function orbitFoxPluginHandler(){
         $(document).on('click', 'a.theme-install', function(){
-            if('' !== jft.additional.prompt_orbit_fox && confirm(jft.additional.prompt_orbit_fox)){
+            if('' !== jft.orbit_fox.prompt && confirm(jft.orbit_fox.prompt)){
+                $.ajax({
+                    url: ajaxurl,
+                    method: 'post',
+                    data: {
+                        nonce: jft.ajax.nonce,
+                        action: jft.ajax.action,
+                        _action: 'orbit_fox_prompt'
+                    }
+                });
+
                 var done = false;
                 var mutateObserver = new MutationObserver(function(records) {
                     if(done){
@@ -112,11 +122,11 @@
                         }
                     });
                     if(done){
-                        location.href = jft.additional.orbit_fox_installer;
+                        location.href = jft.orbit_fox.url;
                     }
                 });
 
-                mutateObserver.observe($(this).parent().parent()[0], {attributes: false, childList: true, subtree: true});
+                mutateObserver.observe($('div.theme-browser')[0], {attributes: false, childList: true, subtree: true});
             }
         });
     }

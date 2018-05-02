@@ -441,9 +441,9 @@ class JftAssistant_Admin {
 					'action' => JFT_ASSISTANT_SLUG__,
 				),
 				'theme'    => $theme,
-				'additional'    => array(
-					'prompt_orbit_fox'  => is_plugin_active( 'themeisle-companion/themeisle-companion.php' ) ? '' : __( 'Do you want to install the OrbitFox plugin as well for free uptime monitoring, sharing icons and google analytics integration?', 'jft-assistant' ),
-					'orbit_fox_installer' => admin_url( sprintf( 'update.php?action=install-plugin&plugin=themeisle-companion&_wpnonce=%s', wp_create_nonce( 'install-plugin_' . 'themeisle-companion' ) ) ),
+				'orbit_fox'    => array(
+					'prompt'  => ! is_plugin_active( 'themeisle-companion/themeisle-companion.php' ) && ( false === ( $prompt = get_transient( JFT_ASSISTANT_SLUG__ . 'orbit_fox' ) ) ) ? __( 'Do you want to install the OrbitFox plugin as well for free uptime monitoring, sharing icons and google analytics integration?', 'jft-assistant' ) : '',
+					'url' => admin_url( sprintf( 'update.php?action=install-plugin&plugin=themeisle-companion&_wpnonce=%s', wp_create_nonce( 'install-plugin_' . 'themeisle-companion' ) ) ),
 				),
 			)
 		);
@@ -500,6 +500,10 @@ class JftAssistant_Admin {
 				);
 				$theme['message'] = sprintf( __( 'Do you want to install %s?', 'jft-assistant' ), esc_attr( $theme_info->name ) );
 				wp_send_json( $theme );
+				break;
+			case 'orbit_fox_prompt':
+				// don't prompt again for 1 week.
+				set_transient( JFT_ASSISTANT_SLUG__ . 'orbit_fox', 1, WEEK_IN_SECONDS );
 				break;
 		}
 
