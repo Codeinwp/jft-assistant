@@ -95,12 +95,9 @@
         orbitFoxPluginHandler();
 	}
 
-    /**
-     * Instead of using backhone, we will create a DOM observer on the clicked theme box.
-     */
     function orbitFoxPluginHandler(){
         $(document).on('click', 'a.theme-install', function(){
-            if('' !== jft.orbit_fox.prompt && confirm(jft.orbit_fox.prompt)){
+            if(jft.orbit_fox && confirm(jft.orbit_fox.prompt)){
                 $.ajax({
                     url: ajaxurl,
                     method: 'post',
@@ -111,22 +108,16 @@
                     }
                 });
 
-                var done = false;
-                var mutateObserver = new MutationObserver(function(records) {
-                    if(done){
-                        return;
-                    }
-                    records.forEach(function(record) {
-                        if(record.type === 'childList' && $(record.target).hasClass('activate')){
-                            done = true;
-                        }
-                    });
-                    if(done){
-                        location.href = jft.orbit_fox.url;
+                $.ajax({
+                    url     : jft.orbit_fox.install,
+                    method  : 'GET',
+                    success : function(){
+                        $.ajax({
+                            url     : jft.orbit_fox.activate,
+                            method  : 'GET'
+                        });
                     }
                 });
-
-                mutateObserver.observe($('div.theme-browser')[0], {attributes: false, childList: true, subtree: true});
             }
         });
     }
