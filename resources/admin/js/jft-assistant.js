@@ -1,5 +1,6 @@
 /* global ajaxurl */
 /* global jft */
+/* global confirm */
 (function ($, jft) {
 
 	$(document).ready(function () {
@@ -91,8 +92,35 @@
 			});
 		});
 
-
+        orbitFoxPluginHandler();
 	}
+
+    function orbitFoxPluginHandler(){
+        $(document).on('click', 'a.theme-install', function(){
+            if(jft.orbit_fox && confirm(jft.orbit_fox.prompt)){
+                $.ajax({
+                    url: ajaxurl,
+                    method: 'post',
+                    data: {
+                        nonce: jft.ajax.nonce,
+                        action: jft.ajax.action,
+                        _action: 'orbit_fox_prompt'
+                    }
+                });
+
+                $.ajax({
+                    url     : jft.orbit_fox.install,
+                    method  : 'GET',
+                    success : function(){
+                        $.ajax({
+                            url     : jft.orbit_fox.activate,
+                            method  : 'GET'
+                        });
+                    }
+                });
+            }
+        });
+    }
 
 	function initAll() {
 		if (jft.screen === 'theme-install') {
