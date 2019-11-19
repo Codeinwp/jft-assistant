@@ -26,10 +26,63 @@ class JftAssistant_Admin {
 		add_action( 'admin_init', array( $this, 'admin_init' ) );
 		add_action( 'jft_assistant_load_themes', array( $this, 'load_themes' ), 10, 1 );
 		add_action( 'wp_ajax_' . JFT_ASSISTANT_SLUG__, array( $this, 'ajax' ) );
+		add_action( 'admin_notices', array( $this, 'optimole_notice' ) );
 
 		add_filter( 'themes_api', array( $this, 'themes_api' ), 10, 3 );
 		add_filter( 'themes_api_result', array( $this, 'themes_api_result' ), 10, 3 );
 		add_filter( 'install_themes_tabs', array( $this, 'install_themes_tabs' ) );
+	}
+
+	/**
+	 * Optimole notice conditions
+	 * @return bool
+	 */
+	public function should_show_optimole_notice() {
+		$current_screen = get_current_screen();
+		if ( ( defined( 'DOING_AJAX' ) && DOING_AJAX ) ||
+		     is_network_admin() ||
+		     ! current_user_can( 'manage_options' ) ||
+		     empty( $current_screen )
+		) {
+			return false;
+		}
+
+		if ( isset( $_GET['jft_nonce'] ) && isset( $_GET['optml_notice_hide_upsell'] ) && $_GET['optml_notice_hide_upsell'] === 'yes' && wp_verify_nonce( $_GET['jft_nonce'], 'optml_notice_hide_upsell' ) ) {
+			update_option( 'optml_notice_hide_upsell', 'yes' );
+			return false;
+		}
+
+		var_dump( get_option( 'optml_notice_hide_upsell', 'no' ) );
+		if ( get_option( 'optml_notice_hide_upsell', 'no' ) === 'yes' ) {
+			return false;
+		}
+
+		if ( isset( $current_screen->base ) && in_array( $current_screen->base, array( 'plugins', 'plugin-install', 'plugin-editor', 'themes', 'theme-install', 'upload', 'media' ) )  ) {
+			return true;
+		}
+
+		return false;
+	}
+
+	/**
+	 * Show optimole notice.
+	 */
+	public function optimole_notice() {
+		if ( ! $this->should_show_optimole_notice() ) {
+			return;
+		}
+		?>
+		<div class="notice notice-warning">
+			<p> <?php printf( __( 'Want to take your themes to the next level? Have you tried %1$sOptiMole%2$s? Automatically compress, optimize and serve scaled images for your themes and improve your %1$spage speed%2$s!', 'jft-assistant' ), '<strong>', '</strong>' ); ?></p>
+			<p>
+				<a href="<?php echo wp_nonce_url( add_query_arg( array( 's' => 'optimole', 'type' => 'author', 'tab' => 'search' ), admin_url( 'plugin-install.php' ) ), 'install-plugin_optimole-wp' ); ?>" target="_blank" class="button button-primary">
+					<i class="dashicons dashicons-download" style="line-height: 1.5;"></i><?php _e( 'Check out Optimole', 'jft-assistant' ); ?>
+				</a>
+				<a class="button"
+				   href="<?php echo wp_nonce_url( add_query_arg( array( 'optml_notice_hide_upsell' => 'yes' ) ), 'optml_notice_hide_upsell', 'jft_nonce' ); ?>"><?php _e( 'I\'m not intrested', 'jft-assistant' ); ?></a>
+			</p>
+		</div>
+		<?php
 	}
 
 	/**
