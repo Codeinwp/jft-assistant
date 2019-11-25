@@ -95,7 +95,7 @@ class JftAssistant_Admin {
                        style="line-height: 1.5;"></i><?php _e( 'Check out Optimole', 'jft-assistant' ); ?>
                 </a>
                 <a class="button"
-                   href="<?php echo wp_nonce_url( add_query_arg( array( 'optml_notice_hide_upsell' => 'yes' ) ), 'optml_notice_hide_upsell', 'jft_nonce' ); ?>"><?php _e( 'I\'m not intrested', 'jft-assistant' ); ?></a>
+                   href="<?php echo wp_nonce_url( add_query_arg( array( 'optml_notice_hide_upsell' => 'yes' ) ), 'optml_notice_hide_upsell', 'jft_nonce' ); ?>"><?php _e( 'I\'m not interested', 'jft-assistant' ); ?></a>
             </p>
         </div>
 		<?php
