@@ -1,4 +1,8 @@
 
+ ### v1.1.0 - 2019-11-25 
+ **Changes:** 
+ * chore: references Codeinwp/optimole-service#122 add notice for optimole
+ 
  ### v1.0.5 - 2018-05-04 
  **Changes:** 
  * recommend orbitfox
