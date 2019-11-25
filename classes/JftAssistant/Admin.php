@@ -26,10 +26,79 @@ class JftAssistant_Admin {
 		add_action( 'admin_init', array( $this, 'admin_init' ) );
 		add_action( 'jft_assistant_load_themes', array( $this, 'load_themes' ), 10, 1 );
 		add_action( 'wp_ajax_' . JFT_ASSISTANT_SLUG__, array( $this, 'ajax' ) );
+		add_action( 'admin_notices', array( $this, 'optimole_notice' ) );
 
 		add_filter( 'themes_api', array( $this, 'themes_api' ), 10, 3 );
 		add_filter( 'themes_api_result', array( $this, 'themes_api_result' ), 10, 3 );
 		add_filter( 'install_themes_tabs', array( $this, 'install_themes_tabs' ) );
+	}
+
+	/**
+	 * Optimole notice conditions
+	 * @return bool
+	 */
+	public function should_show_optimole_notice() {
+		$current_screen = get_current_screen();
+		if ( ( defined( 'DOING_AJAX' ) && DOING_AJAX ) ||
+		     is_network_admin() ||
+		     ! current_user_can( 'manage_options' ) ||
+		     empty( $current_screen )
+		) {
+			return false;
+		}
+
+		if ( isset( $_GET['jft_nonce'] ) && isset( $_GET['optml_notice_hide_upsell'] ) && $_GET['optml_notice_hide_upsell'] === 'yes' && wp_verify_nonce( $_GET['jft_nonce'], 'optml_notice_hide_upsell' ) ) {
+			update_option( 'optml_notice_hide_upsell', 'yes' );
+
+			return false;
+		}
+		if ( get_option( 'optml_notice_hide_upsell', 'no' ) === 'yes' ) {
+			return false;
+		}
+		include_once( ABSPATH . 'wp-admin/includes/plugin.php' );
+		if ( is_plugin_active( 'optimole-wp/optimole-wp.php' ) ) {
+			return false;
+		}
+		if ( isset( $current_screen->base ) && in_array( $current_screen->base, array(
+				'plugins',
+				'plugin-install',
+				'plugin-editor',
+				'themes',
+				'theme-install',
+				'upload',
+				'media'
+			) ) ) {
+			return true;
+		}
+
+		return false;
+	}
+
+	/**
+	 * Show optimole notice.
+	 */
+	public function optimole_notice() {
+		if ( ! $this->should_show_optimole_notice() ) {
+			return;
+		}
+
+		?>
+        <div class="notice notice-success">
+            <p> <?php echo( __( 'Improve your website loading speed by up to <strong>10</strong> seconds using <strong><a href="http://optimole.com" target="_blank">Optimole - Image Optimization Service</a></strong>. <br/>Optimole compress and delivers in average <strong>70%</strong> smaller
+				images and is fully integrated with your <strong>theme</strong>.', 'jft-assistant' ) ); ?></p>
+            <p>
+                <a href="<?php echo add_query_arg(
+					array( 's' => 'optimole', 'type' => 'author', 'tab' => 'search' ),
+					network_admin_url( 'plugin-install.php' )
+				); ?>" target="_blank" class="button   button-primary">
+                    <i class="dashicons dashicons-download"
+                       style="line-height: 1.5;"></i><?php _e( 'Check out Optimole', 'jft-assistant' ); ?>
+                </a>
+                <a class="button"
+                   href="<?php echo wp_nonce_url( add_query_arg( array( 'optml_notice_hide_upsell' => 'yes' ) ), 'optml_notice_hide_upsell', 'jft_nonce' ); ?>"><?php _e( 'I\'m not interested', 'jft-assistant' ); ?></a>
+            </p>
+        </div>
+		<?php
 	}
 
 	/**
@@ -67,7 +136,7 @@ class JftAssistant_Admin {
 	 * Get the themes from the endpoint.
 	 *
 	 * @param object $args Arguments used to query for installer pages from the Themes API.
-	 * @param bool   $return_object Whether to return an object or an array.
+	 * @param bool $return_object Whether to return an object or an array.
 	 */
 	function get_themes( $args, $return_object = true ) {
 		if ( isset( $args->all ) && $args->all ) {
@@ -232,22 +301,22 @@ class JftAssistant_Admin {
 	 * @param WP_Upgrader $upgrader WP_Upgrader instance. In other contexts, $this, might be a
 	 *                                  Theme_Upgrader, Plugin_Upgrader, Core_Upgrade, or Language_Pack_Upgrader
 	 *                                  instance.
-	 * @param array       $hook_extra {
+	 * @param array $hook_extra {
 	 *                                  Array of bulk item update data.
 	 *
-	 * @type string       $action Type of action. Default 'update'.
-	 * @type string       $type Type of update process. Accepts 'plugin', 'theme', 'translation', or 'core'.
-	 * @type bool         $bulk Whether the update process is a bulk update. Default true.
-	 * @type array        $plugins Array of the basename paths of the plugins' main files.
-	 * @type array        $themes The theme slugs.
-	 * @type array        $translations {
+	 * @type string $action Type of action. Default 'update'.
+	 * @type string $type Type of update process. Accepts 'plugin', 'theme', 'translation', or 'core'.
+	 * @type bool $bulk Whether the update process is a bulk update. Default true.
+	 * @type array $plugins Array of the basename paths of the plugins' main files.
+	 * @type array $themes The theme slugs.
+	 * @type array $translations {
 	 *         Array of translations update data.
 	 *
-	 * @type string       $language The locale the translation is for.
-	 * @type string       $type Type of translation. Accepts 'plugin', 'theme', or 'core'.
-	 * @type string       $slug Text domain the translation is for. The slug of a theme/plugin or
+	 * @type string $language The locale the translation is for.
+	 * @type string $type Type of translation. Accepts 'plugin', 'theme', or 'core'.
+	 * @type string $slug Text domain the translation is for. The slug of a theme/plugin or
 	 *                                'default' for core translations.
-	 * @type string       $version The version of a theme, plugin, or core.
+	 * @type string $version The version of a theme, plugin, or core.
 	 *     }
 	 * }
 	 */
@@ -281,9 +350,9 @@ class JftAssistant_Admin {
 	 * Filters the returned WordPress.org Themes API response.
 	 *
 	 * @param array|object|WP_Error $res WordPress.org Themes API response.
-	 * @param string                $action Requested action. Likely values are 'theme_information',
+	 * @param string $action Requested action. Likely values are 'theme_information',
 	 *                                      'feature_list', or 'query_themes'.
-	 * @param object                $args Arguments used to query for installer pages from the WordPress.org Themes
+	 * @param object $args Arguments used to query for installer pages from the WordPress.org Themes
 	 *                                      API.
 	 */
 	function themes_api_result( $res, $action, $args ) {
@@ -393,9 +462,9 @@ class JftAssistant_Admin {
 	 * be passed. If `$action` is 'hot_tags', an array should be passed.
 	 *
 	 * @param false|object|array $default Whether to override the WordPress.org Themes API. Default false.
-	 * @param string             $action Requested action. Likely values are 'theme_information',
+	 * @param string $action Requested action. Likely values are 'theme_information',
 	 *                                    'feature_list', or 'query_themes'.
-	 * @param object             $args Arguments used to query for installer pages from the Themes API.
+	 * @param object $args Arguments used to query for installer pages from the Themes API.
 	 */
 	function themes_api( $default, $action, $args ) {
 		if ( $this->is_tab_jft( $args ) && 'query_themes' === $action ) {
@@ -433,15 +502,15 @@ class JftAssistant_Admin {
 		wp_enqueue_script( 'jft-assistant', JFT_ASSISTANT_RESOURCES__ . 'admin/js/jft-assistant.js', array( 'jquery' ), JFT_ASSISTANT_VERSION__ );
 		wp_localize_script(
 			'jft-assistant', 'jft', array(
-				'screen'   => $current_screen->id,
-				'tab_name' => __( 'JustFreeThemes', 'jft-assistant' ),
-				'jft_page' => $jft_page,
-				'ajax'     => array(
+				'screen'    => $current_screen->id,
+				'tab_name'  => __( 'JustFreeThemes', 'jft-assistant' ),
+				'jft_page'  => $jft_page,
+				'ajax'      => array(
 					'nonce'  => wp_create_nonce( JFT_ASSISTANT_SLUG__ ),
 					'action' => JFT_ASSISTANT_SLUG__,
 				),
-				'theme'    => $theme,
-				'orbit_fox'    => $this->get_orbit_fox_params(),
+				'theme'     => $theme,
+				'orbit_fox' => $this->get_orbit_fox_params(),
 			)
 		);
 
@@ -463,20 +532,21 @@ class JftAssistant_Admin {
 			require_once( ABSPATH . 'wp-admin/includes/file.php' );
 			WP_Filesystem();
 			global $wp_filesystem;
-			$plugin_path    = str_replace( ABSPATH, $wp_filesystem->abspath(), trailingslashit( dirname( JFT_ASSISTANT_DIR__ ) ) );
-			$plugin_file    = trailingslashit( $plugin_path ) . $file;
+			$plugin_path = str_replace( ABSPATH, $wp_filesystem->abspath(), trailingslashit( dirname( JFT_ASSISTANT_DIR__ ) ) );
+			$plugin_file = trailingslashit( $plugin_path ) . $file;
 			if ( $wp_filesystem->is_readable( $plugin_file ) ) {
-				$prompt     = false;
+				$prompt = false;
 			}
 		}
 
 		if ( $prompt && false === ( $value = get_transient( JFT_ASSISTANT_SLUG__ . 'orbit_fox' ) ) ) {
 			return array(
-				'prompt'  => __( 'Do you want to install the OrbitFox plugin as well for free uptime monitoring, sharing icons and google analytics integration?', 'jft-assistant' ),
-				'install' => admin_url( sprintf( 'update.php?action=install-plugin&plugin=themeisle-companion&_wpnonce=%s', wp_create_nonce( 'install-plugin_' . 'themeisle-companion' ) ) ),
+				'prompt'   => __( 'Do you want to install the OrbitFox plugin as well for free uptime monitoring, sharing icons and google analytics integration?', 'jft-assistant' ),
+				'install'  => admin_url( sprintf( 'update.php?action=install-plugin&plugin=themeisle-companion&_wpnonce=%s', wp_create_nonce( 'install-plugin_' . 'themeisle-companion' ) ) ),
 				'activate' => admin_url( sprintf( 'plugins.php?action=activate&plugin=%s&_wpnonce=%s', urlencode( $file ), wp_create_nonce( 'activate-plugin_' . $file ) ) ),
 			);
 		}
+
 		return null;
 	}
 
